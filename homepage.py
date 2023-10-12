@@ -44,7 +44,8 @@ uploaded_file = st.file_uploader("Upload a file:", type=["mp4","mov"])
 voice = 'Speaker'
 speech = st.selectbox('Language:', [key for key in languages])
 language = languages[speech]
-cc = st.toggle('Subtitles')
+# cc = st.toggle('Subtitles') #TODO: work on subtitles
+cc = False
 promo = st.text_input('Enter Promo Code:')
 
 # Voice & Subtitle logic path
