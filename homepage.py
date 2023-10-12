@@ -105,7 +105,7 @@ if voice != 'None' or cc:
             price = round((cost+margin)*duration/60,2)
 
             # Route for Lightning Address Generation and Conversion Rate
-            quote = lightning_quote(price, 'Translait!')
+            quote = lightning_quote(price, 'Jargonspeak!🔥')
             lninv = quote[0]
             conv_rate = quote[1]
             invid = quote[2]
@@ -156,8 +156,8 @@ if voice != 'None' or cc:
         # Show video & download button
         placeholder4.empty()
         st.success('Here is the translated video:')
-        st.video(filepath+'translait_'+filename)
-        with open(filepath+'translait_'+filename, 'rb') as file:
+        st.video(filepath+'jargonspeak_'+filename)
+        with open(filepath+'jargonspeak_'+filename, 'rb') as file:
             # Read the binary data from the file
             binary = file.read()
-        st.download_button(label='Download', data=binary, file_name=filename, mime='video/mp4')
+        st.download_button(label='Download', data=binary, file_name='jargonspeak.mp4', mime='video/mp4')
