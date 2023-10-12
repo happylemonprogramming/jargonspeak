@@ -190,14 +190,14 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# overlay_audio(background, new_audio, new_audio)
 
 	# Add final audio to video file
-	output_video = filepath+'translait_'+filename
+	output_video = filepath+'jargonspeak_'+filename
 	add_new_audio(filepath+filename, new_audio, subtitles, output_video)
 	# print('New video file creation attempted')
 
 	# STEP #5: Cloud storage of video file______________________________________________________________________________
 	# TODO: need to figure out permissions and link expiration; may be needed if filesize is too large to download
-	# translaitlink = serverlink(output_video, 'translait_'+filename)
-	translaitlink = None
+	# jargonlink = serverlink(output_video, 'jargonspeak_'+filename)
+	jargonlink = None
 
 	# STEP #6: Delete voice and remove files____________________________________________________________________________
 	# Use glob to find all .wav files in the directory
@@ -214,4 +214,4 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	for mp4_file in original_file:
 		os.remove(mp4_file)
 
-	return output_video, raw_text, translaitlink
+	return output_video, raw_text, jargonlink
