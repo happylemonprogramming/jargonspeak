@@ -1,7 +1,4 @@
-# Ignore virtual environment
-env/
+environ/
 files/
-output/
-pretrained_models/
 __pycache__/
 *.mp4

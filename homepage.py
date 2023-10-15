@@ -11,14 +11,14 @@ from qrcodegenerator import *
 import uuid
 
 languages = {
-  "English (USA)": "EN-US",
-  "English (UK)": "EN-GB",
+  "English": "EN-US",
+#   "English (UK)": "EN-GB",
   "Spanish": "ES",
   "German": "DE",
   "Japanese": "JA",
   "Korean": "KO",
   "Polish": "PL",
-  "Portuguese (Portugal)": "PT-PT",
+  "Portuguese": "PT-PT",
   "Portuguese (Brazil)": "PT-BR",
   "Romanian": "RO",
   "Slovak": "SK",
@@ -37,7 +37,14 @@ languages = {
 
 # Front Page
 st.title("Automated AI Audio/Video Dubbing")
-st.text('Translate, caption or voiceover any video')
+st.text('Translate, caption or dub any video in 20 languages.')
+st.text('No sign up information.')
+st.text('No watermark.')
+st.text('No licensing.')
+st.text('Unlimited usage at $1/minute.')
+st.text('Voice cloning included.')
+st.text('15 minute maximum for Beta')
+
 video_url = st.text_input('Paste YouTube or video link:')
 uploaded_file = st.file_uploader("Upload a file:", type=["mp4","mov"])
 # voice = st.selectbox('Voice:', ['None','Speaker','Bella','Josh'])
@@ -101,8 +108,15 @@ if voice != 'None' or cc:
             video = filepath+filename
 
         with st.spinner('Pending lightning invoice...'):
-            cost = 0.33
-            margin = 0.17
+            # $0.10/min Moises (Vocal Background Split)
+            # $0.0043/min Deepgram (Transcription)
+            # $0.025/1,000 characters DeepL (Translation) (+$5.49/month)
+            # $0.30/1,000 characters Elevenlabs (AI Voiceover) (+$22/month)
+            # $0.023/GB Amazon S3
+            # $0.010/hour Heroku
+            
+            cost = 0.43 # $/MIN
+            margin = 0.57 # $/MIN
             price = round((cost+margin)*duration/60,2)
 
             # Route for Lightning Address Generation and Conversion Rate
@@ -151,11 +165,12 @@ if voice != 'None' or cc:
             response = translatevideo(video, voice=voice, captions=cc, filepath=filepath, filename=filename, language=language)
             print(f"Total program ran successfully! ({round((time.time()-start)/60.00,2)}s)")
 
-        # st.success('Bookmark this link to the video for future reference:')
-        # st.code(response[2])
-
         # Show video & download button
         placeholder4.empty()
+        st.success('Video download link:')
+        st.link_button(label='Download', url=response[2])
+
+
         st.success('Here is the translated video:')
         st.video(filepath+'jargonspeak_'+filename)
         with open(filepath+'jargonspeak_'+filename, 'rb') as file:

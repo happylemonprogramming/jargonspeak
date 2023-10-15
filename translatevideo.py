@@ -3,6 +3,8 @@ from aivoicecreator import *
 from audiofunctions import *
 from videofunctions import *
 from deepltranslate import *
+from audiosplitter import *
+from cloud import *
 import json
 import os
 import glob
@@ -16,15 +18,17 @@ max_length = 1000000
 def translatevideo(video, voice='Bella', captions=False, filepath='files/', filename= 'video.mp4', language='en'):
 	# STEP #0: Split audio into background & vocals______________________________________________________________________
 	# Separate Audio
-	# TODO: resolve library conflicts on Heroku
-	# print(video)
-	# separateaudio(video)
-	# background = f'output/{filename[:-4]}/accompaniment.wav'
-	# vocals = f'output/{filename[:-4]}/vocals.wav'
+	extractedaudio = filepath+'extractedaudio.mp3'
+	vocalspath = filepath+'vocals.wav'
+	backgroundpath = filepath+'background.wav'
+	extract_audio(video, extractedaudio)
+	vocals, background = splitaudio(extractedaudio)
+	downloadvideo(vocals, vocalspath)
+	downloadvideo(background, backgroundpath)
 
 	# STEP #1: Take vocals and transcribe to timed text translation______________________________________________________
 	# Transcribe video to text
-	text = localtranscription(video, 'en') # English is the most reliable for timing (see next Step for translation)
+	text = localtranscription(vocalspath, 'en') # English is the most reliable for timing (see next Step for translation)
 	print(text)
 	# TODO: split speakers into timed list/dictionary to individually train for each voice in media
 	# Open the file in write mode and save 'text' to it
@@ -101,9 +105,9 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 			# Use speaker voice if elected
 			if voice == 'Speaker': # TODO: need to figure out how to train for multiple speakers
 				# Filesize error prevention
-				file_size = os.path.getsize(video)
+				file_size = os.path.getsize(vocalspath)
 				target_size = 10 * 1024 * 1024  # 10MB
-				audio = AudioSegment.from_file(video, format="mp4")
+				audio = AudioSegment.from_file(vocalspath, format="wav")
 
 				# Calculate the duration for a 10MB audio clip (in milliseconds)
 				target_duration = (target_size / (file_size * 1.0)) * len(audio)
@@ -186,8 +190,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 
 	# STEP #4: Combine AI vocals with background and add to video_______________________________________________________	
 	# Combine background with AI voice:
-	# TODO: see Step 2
-	# overlay_audio(background, new_audio, new_audio)
+	overlay_audio(backgroundpath, new_audio, new_audio)
 
 	# Add final audio to video file
 	output_video = filepath+'jargonspeak_'+filename
@@ -196,8 +199,8 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 
 	# STEP #5: Cloud storage of video file______________________________________________________________________________
 	# TODO: need to figure out permissions and link expiration; may be needed if filesize is too large to download
-	# jargonlink = serverlink(output_video, 'jargonspeak_'+filename)
-	jargonlink = None
+	jargonlink = serverlink(output_video, 'jargonspeak_'+filename)
+	# jargonlink = None
 
 	# STEP #6: Delete voice and remove files____________________________________________________________________________
 	# Use glob to find all .wav files in the directory
@@ -211,7 +214,8 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# Iterate through the list of files and delete each one
 	for wav_file in wav_files:
 		os.remove(wav_file)
-	for mp4_file in original_file:
-		os.remove(mp4_file)
+	# TODO: ERROR file still in use (subprocess.popen.(deletefiles)?)
+	# for mp4_file in original_file:
+	# 	os.remove(mp4_file)
 
 	return output_video, raw_text, jargonlink
