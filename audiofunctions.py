@@ -132,18 +132,22 @@ def add_new_audio(input_video, new_audio=None, subtitles=None, output_video='out
 
 def audiospeed(input_audio, output_audio, speed):
     start = time.time()
-    if speed <= 1.00:
-        speed = 1.00
+    # Speed is bounded by limits of FFMPEG [0.50,100.00]
+    if speed < 0.66: # Below 2/3X speed, speech is too stretched (Tradeoff: there will be a pause)
+        speed = 0.66
+    elif speed > 3.00: # Beyond 3X speed, speech is unintelligible (Tradeoff: potential overlapping)
+        speed = 3.00
     else:
         speed = speed
     ffmpeg_cmd = [
         'ffmpeg',
+        '-y',
         '-i', input_audio,
         '-filter:a',
         f'atempo={speed}', output_audio
     ]
     subprocess.run(ffmpeg_cmd)
-    print(f"New audio/video created successfully! ({round(time.time()-start,2)}s)")
+    print(f"New audio speed created successfully! ({round(time.time()-start,2)}s)")
 
 def separateaudio(file):
     # Define the command to execute
@@ -165,4 +169,10 @@ if __name__ == "__main__":
     # speed_change(path, speed_factor=2.0)
     # speed_up_audio(path, output, speed_factor=speed)
     # audiospeed(path, output, speed)
-    separateaudio(r"C:\Users\clayt\Documents\Programming\translait\files\asfdasdf.mp4")
+    # separateaudio(r"C:\Users\clayt\Documents\Programming\translait\files\asfdasdf.mp4")
+    # original_path = r'C:\Users\clayt\Videos\Video Translation\Julie Translations\Test\RPReplay_Final1695273035.MP4'
+    # new_audio_path = r"C:\Users\clayt\Videos\Video Translation\Julie Translations\Test\51.wav"
+    # filename = os.path.basename(original_path)
+    # add_new_audio(input_video=original_path,new_audio=new_audio_path,subtitles=None,output_video=f'jargonspeak_{filename}')
+    file = r'C:\Users\clayt\Documents\Programming\jargonspeak\files\77dd48b86c7911eeaf4f18ff0f367121\extractedaudio.mp3'
+    audiospeed(file,'slow.mp3',0.60)

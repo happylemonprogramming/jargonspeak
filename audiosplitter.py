@@ -15,13 +15,13 @@ def requestupload():
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
-        print("Request was successful.")
+        print("Moises audio upload request successful.")
         output = response.json()
         uploadUrl = output['uploadUrl']
         downloadUrl = output['downloadUrl']
 
     else:
-        print(f"Request failed with status code {response.status_code}.")
+        print(f"Moises audio upload request failed with status code {response.status_code}.")
         print("Response content:")
         print(response.text)
         uploadUrl, downloadUrl = None
@@ -34,10 +34,9 @@ def uploadfile(uploadUrl, filepath, filename='track.mp3'):
     response = requests.put(uploadUrl, files=files)
 
     if response.status_code == 200:
-        print("File successfully uploaded.")
-        print(response)
+        print("Moises audio file successfully uploaded.")
     else:
-        print(f"Failed to upload file. Status code: {response.status_code}")
+        print(f"Moises failed to upload file. Status code: {response.status_code}")
         print(response.text)
 
 # Generate Job ID
@@ -60,12 +59,11 @@ def createjob(name, downloadUrl):
     response = requests.post(url, headers=headers, data=json.dumps(data))
 
     if response.status_code == 200:
-        print("Job created successfully.")
-        print(response.text)
+        print("Moises job created successfully.")
         job_id = response.json().get("id")
         print(f"Job ID: {job_id}")
     else:
-        print(f"Failed to create job. Status code: {response.status_code}")
+        print(f"Moises failed to create job. Status code: {response.status_code}")
         print(response.text)
         job_id = None
     return job_id
@@ -78,21 +76,17 @@ def getjobstatus(job_id):
     }
 
     response = requests.get(url, headers=headers)
-
+    status = None
+    vocals = None
+    background = None
     if response.status_code == 200:
-        print("Request was successful.")
+        print("Moises status request was successful.")
         data = response.json()  # Parse the JSON response
-        print("getjobstatus:", data)
         status = data['status']
         if data['result'] != {}:
             vocals = data['result']['vocals']
             background = data['result']['accompaniment']
-        else:
-            vocals = None
-            background = None
     else:
-        vocals = None
-        background = None
         print(f"Request failed. Status code: {response.status_code}")
         print(response)
     return status, vocals, background
@@ -107,10 +101,10 @@ def deletejob(job_id):
     response = requests.delete(url, headers=headers)
 
     if response.status_code == 204:
-        print("Request was successful. The resource has been deleted.")
+        print("Moises delete request was successful. The resource has been deleted.")
         print(response)
     else:
-        print(f"Request failed. Status code: {response.status_code}")
+        print(f"Moises delete request failed. Status code: {response.status_code}")
         print(response)
 
 def splitaudio(audio):
@@ -118,25 +112,30 @@ def splitaudio(audio):
     uploadfile(uploadUrl, audio)
     job_id = createjob('jargonspeak', downloadUrl)
     status = getjobstatus(job_id)[0]
-    while status == 'STARTED':
+    # Default values
+    vocals = None
+    background = None
+    print('Job status: ', status)
+    while status != 'SUCCEEDED' or status != 'FAILED':
         time.sleep(1)
         status = getjobstatus(job_id)[0]
+        print('Job status: ', status)
         if status == 'SUCCEEDED':
             status, vocals, background = getjobstatus(job_id)
             print('Split complete.')
             break
         elif status == 'FAILED':
-            print('Split failed.')
-            raise FileNotFoundError()
-        print('Audio split in progress...')
+            raise Exception(f'Split failed.')
+        else:
+            print('Audio split in progress...')
     return vocals, background
 
 if __name__ == '__main__':
     # uploadUrl, downloadUrl = requestupload()
     # uploadfile(uploadUrl, 'videovoice.mp3', 'input.')
     # job_id = createjob('Ye Job', downloadUrl)
-    # job_id = '2001316e-835c-4fe2-9c15-f61a658d4c00'
-    # getjobstatus(job_id)
-    vocals, background = splitaudio('videovoice.mp3')
-    print(vocals)
-    print(background)
+    job_id = 'd7ee2889-20a3-472f-8bc9-3d1eadd41213'
+    print(getjobstatus(job_id))
+    # vocals, background = splitaudio('videovoice.mp3')
+    # print(vocals)
+    # print(background)

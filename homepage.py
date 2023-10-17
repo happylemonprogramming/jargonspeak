@@ -116,7 +116,7 @@ if voice != 'None' or cc:
             # $0.010/hour Heroku
             
             cost = 0.43 # $/MIN
-            margin = 0.57 # $/MIN
+            margin = 0.36 # $/MIN
             price = round((cost+margin)*duration/60,2)
 
             # Route for Lightning Address Generation and Conversion Rate
@@ -163,17 +163,25 @@ if voice != 'None' or cc:
             start = time.time()
             filename = filename.strip().replace(' ','')
             response = translatevideo(video, voice=voice, captions=cc, filepath=filepath, filename=filename, language=language)
-            print(f"Total program ran successfully! ({round((time.time()-start)/60.00,2)}s)")
+            formatted_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-start))
+            print(f"Total program ran successfully! ({formatted_time})")
+            # print(f"Total program ran successfully! ({round((time.time()-start)/60.00,2)}min)")
 
         # Show video & download button
         placeholder4.empty()
-        st.success('Video download link:')
-        st.link_button(label='Download', url=response[2])
-
-
         st.success('Here is the translated video:')
         st.video(filepath+'jargonspeak_'+filename)
-        with open(filepath+'jargonspeak_'+filename, 'rb') as file:
-            # Read the binary data from the file
-            binary = file.read()
-        st.download_button(label='Download', data=binary, file_name='jargonspeak.mp4', mime='video/mp4')
+        st.link_button(label='Download', url=response[2]) # AWS Download
+        # with open(filepath+'jargonspeak_'+filename, 'rb') as file: # Memory Download
+        #     # Read the binary data from the file
+        #     binary = file.read()
+        # st.download_button(label='Download', data=binary, file_name='jargonspeak.mp4', mime='video/mp4')
+
+        # Check accuracy relative to transcription based on minimum character changes
+        original_text = response[1]
+        from deeptranscribe import getDeepgramTranscription
+        text = getDeepgramTranscription(response[3])
+        new_text = text['results']['channels'][0]['alternatives'][0]['transcript']
+        from levenshteinalgorithm import calculate_similarity
+        similarity = calculate_similarity(original_text, new_text)
+        st.info(f'{similarity:.2f}% Accurate to Transcription')

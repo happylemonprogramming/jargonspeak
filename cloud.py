@@ -30,7 +30,7 @@ def serverlink(local_filepath, object_name='video.mp4'):
             'Key': object_name,
             'ResponseContentDisposition': f'attachment; filename="{object_name}"' if object_name else 'attachment'
         },
-        ExpiresIn=24*60*60
+        # ExpiresIn=24*60*60
     )
 
     print(f"Uploaded {object_name} successfully! ({round(time.time()-start,2)}s)")

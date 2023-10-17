@@ -8,14 +8,11 @@ from cloud import *
 import json
 import os
 import glob
-
-messi = 'https://www.youtube.com/watch?v=UCQiwICqINc'
-maru = 'https://db9c2d0e80dc9774067d0f439aa504a7.cdn.bubble.io/f1692677290753x434684319755118660/RPReplay_Final1692675241.MP4'
-maru = 'https://www.youtube.com/watch?v=taZ3STb5yak'
-putin = 'https://www.youtube.com/watch?v=EkDwRJqcHSI'
-max_length = 1000000
+import time
 
 def translatevideo(video, voice='Bella', captions=False, filepath='files/', filename= 'video.mp4', language='en'):
+	totalstart = time.time()
+	start = time.time()
 	# STEP #0: Split audio into background & vocals______________________________________________________________________
 	# Separate Audio
 	extractedaudio = filepath+'extractedaudio.mp3'
@@ -25,10 +22,14 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	vocals, background = splitaudio(extractedaudio)
 	downloadvideo(vocals, vocalspath)
 	downloadvideo(background, backgroundpath)
+	end = time.time()
+	splitaudiotime = end-start
 
 	# STEP #1: Take vocals and transcribe to timed text translation______________________________________________________
 	# Transcribe video to text
-	text = localtranscription(vocalspath, 'en') # English is the most reliable for timing (see next Step for translation)
+	start = time.time()
+	# text = localtranscription(vocalspath, 'en') # English is the most reliable for timing (see next Step for translation)
+	text = getDeepgramTranscription(vocals)
 	print(text)
 	# TODO: split speakers into timed list/dictionary to individually train for each voice in media
 	# Open the file in write mode and save 'text' to it
@@ -60,6 +61,8 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 			transcripts.append(group['text'])
 			starts.append(group['start'])
 			ends.append(group['end'])
+	end = time.time()
+	transcribetime = end-start
 	
 	# # Word Level [Tonality between words is too different and doesn't flow well at all]
 	# # gather all paragraphs into unified list
@@ -73,30 +76,39 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# print('Starts length: ', len(starts))
 
 	# STEP #1.5: Translate transcription with a separate API for greater accuracy________________________________________
-	for transcript in transcripts:
-		print(transcript)
-		text = texttranslate(transcript, language)
-		print(text)
-		texts.append(text)
-	print('Transcripts: ', transcripts)
-	print('Texts: ', texts)
-	# raise NameError
+	start = time.time()
+	if language != 'EN-US':
+		for transcript in transcripts:
+			print(transcript)
+			text = texttranslate(transcript, language)
+			print(text)
+			texts.append(text)
+		print('Transcripts: ', transcripts)
+		print('Texts: ', texts)
+	else:
+		texts = transcripts
+	end = time.time()
+	translatetime = end-start
 
 	# STEP #2: Create sub-title file (if requested)______________________________________________________________________
+	start = time.time()
 	if captions:
 		# Create word-level subtitle file
 		subtitles = convert_to_srt(subtitle_data, path=filepath) #TODO: make sure this works with new API
 		# print('Subtitles created')
 	else:
 		subtitles = None
+	end = time.time()
+	captiontime = end-start
 
 	# STEP #3: Create AI voice__________________________________________________________________________________________
+	aistart = time.time()
 	if voice != 'None':
 		info = subscriptioninfo()
 		character_count = info['character_count']
 		character_limit = info['character_limit']
-		if character_count<character_limit:
-		# if True:
+		# if character_count<character_limit:
+		if True:
 			print('New audio requested')
 
 			# # extract video audio
@@ -151,12 +163,13 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 			# Speed up AI voiceover (if needed) to avoid interference
 			i = 0
 			for start in starts:
-				file = filepath+f'AI{i}.wav'
-				AIaudio = AudioSegment.from_file(file)
+				inputfile = filepath+f'AI{i}.wav'
+				AIaudio = AudioSegment.from_file(inputfile)
 				AIduration = float(len(AIaudio) / 1000) # seconds
 				OGduration = float(ends[i]-start) # seconds
 				speed = round(AIduration/OGduration,2)
-				audiospeed(file, filepath+f'{i}.wav', speed)
+				outputfile = filepath+f'{i}.wav'
+				audiospeed(inputfile, outputfile, speed) #FFMPEG cannot edit existing files (safety), thus a new naming convention
 				i += 1
 				
 			# Prepend silence to AI voiceover based on start time
@@ -187,22 +200,28 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	else:
 		new_audio = None
 		print('No new audio requested')
-
+	aiend = time.time()
+	aivoicetime = aiend-aistart
 	# STEP #4: Combine AI vocals with background and add to video_______________________________________________________	
 	# Combine background with AI voice:
+	start = time.time()
 	overlay_audio(backgroundpath, new_audio, new_audio)
 
 	# Add final audio to video file
 	output_video = filepath+'jargonspeak_'+filename
 	add_new_audio(filepath+filename, new_audio, subtitles, output_video)
 	# print('New video file creation attempted')
-
+	end = time.time()
+	videocompiletime = end-start
 	# STEP #5: Cloud storage of video file______________________________________________________________________________
 	# TODO: need to figure out permissions and link expiration; may be needed if filesize is too large to download
+	start = time.time()
 	jargonlink = serverlink(output_video, 'jargonspeak_'+filename)
 	# jargonlink = None
-
+	end = time.time()
+	cloudtime = end-start
 	# STEP #6: Delete voice and remove files____________________________________________________________________________
+	start = time.time()
 	# Use glob to find all .wav files in the directory
 	wav_files = glob.glob(os.path.join(filepath, "*.wav"))
 	# Use glob to find all .mp4 files in the directory
@@ -217,5 +236,17 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# TODO: ERROR file still in use (subprocess.popen.(deletefiles)?)
 	# for mp4_file in original_file:
 	# 	os.remove(mp4_file)
+	end = time.time()
+	cleanuptime = end-start
+	totalend = time.time()
+	totaltime = totalend-totalstart
+	timedictionary = {'splitaudiotime': f'{splitaudiotime}s', 'transcribetime': f'{transcribetime}s', 'translatetime': f'{translatetime}s', 'captiontime': f'{captiontime}s', 'aivoicetime': f'{aivoicetime}s', 'videocompiletime': f'{videocompiletime}s', 'cloudtime': f'{cloudtime}s', 'cleanuptime': f'{cleanuptime}s', 'totaltime': f"{totaltime}s"}
+	print(timedictionary)
+	return output_video, raw_text, jargonlink, vocals
 
-	return output_video, raw_text, jargonlink
+if __name__ == '__main__':
+	filepath = r'C:\Users\clayt\Videos\Video Translation\Julie Translations\Originals/'
+	mp4_files = glob.glob(os.path.join(filepath, "*.mp4"))
+	for file in mp4_files:
+		filename = os.path.basename(file)
+		translatevideo(file, voice='Speaker', captions=False, filepath=filepath, filename=filename, language='EN-US')

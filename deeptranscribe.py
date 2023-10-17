@@ -45,8 +45,8 @@ def localtranscription(localpath, language):
     enhanced = {'da','fr','de','hi','pt','pt-BR','pt-PT','es','es-419','nl','it','ja','ko','no','pl','sv','ta'}
     if language in english:
         # model = 'nova'
-        model = 'whisper-large'
-        # model='nova-2-ea'
+        # model = 'whisper-large'
+        model='nova-2-ea'
     elif language in enhanced:
         # model = 'enhanced'
         model = 'whisper-large'
@@ -67,7 +67,8 @@ def localtranscription(localpath, language):
 def getDeepgramTranscription(p_url):
     start = time.time()
     # Use this to get subtitles in English
-    url = "https://api.deepgram.com/v1/listen?model=whisper-large&language=en&punctuate=true&diarize=true&smart_format=true"
+    url = "https://api.deepgram.com/v1/listen?model=nova-2-ea&language=en&punctuate=true&diarize=true&smart_format=true"
+    # url = "https://api.deepgram.com/v1/listen?model=whisper-large&language=en&punctuate=true&diarize=true&smart_format=true"
 
     # Use this to get subtitles in the same language as the audio/video
     # url = "https://api.deepgram.com/v1/listen?model=whisper-large&detect_language=true"
@@ -179,7 +180,7 @@ if __name__ == '__main__':
     # output = getDeepgramTranscription(p_url)
     
     # Local Function
-    path = r'C:\Users\clayt\Documents\Programming\translait\output\RPReplay_Final1692675241\vocals.wav'
+    path = r'C:\Users\clayt\Documents\Programming\jargonspeak\video.mp4'
     output = localtranscription(path,languages['English'])
         
     # Output Reading
@@ -194,3 +195,6 @@ if __name__ == '__main__':
     # print('Subtitle Data: ', subtitle_data)
     print('Paragraphs: ', paragraphs)
     # print('Words: ', words)
+    with open('yodatranscript.txt', 'w', encoding='utf-8') as file:
+        file.write(str(output))
+    print('Video transcribed')
