@@ -76,6 +76,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# print('Starts length: ', len(starts))
 
 	# STEP #1.5: Translate transcription with a separate API for greater accuracy________________________________________
+	# This step helps with word timing since Deepgram translations can be timed inconsistently
 	start = time.time()
 	if language != 'EN-US':
 		for transcript in transcripts:
@@ -242,7 +243,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	totaltime = totalend-totalstart
 	timedictionary = {'splitaudiotime': f'{splitaudiotime}s', 'transcribetime': f'{transcribetime}s', 'translatetime': f'{translatetime}s', 'captiontime': f'{captiontime}s', 'aivoicetime': f'{aivoicetime}s', 'videocompiletime': f'{videocompiletime}s', 'cloudtime': f'{cloudtime}s', 'cleanuptime': f'{cleanuptime}s', 'totaltime': f"{totaltime}s"}
 	print(timedictionary)
-	return output_video, raw_text, jargonlink, vocals
+	return output_video, raw_text, jargonlink
 
 if __name__ == '__main__':
 	filepath = r'C:\Users\clayt\Videos\Video Translation\Julie Translations\Originals/'

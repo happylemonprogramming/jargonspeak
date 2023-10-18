@@ -179,9 +179,12 @@ if voice != 'None' or cc:
 
         # Check accuracy relative to transcription based on minimum character changes
         original_text = response[1]
-        from deeptranscribe import getDeepgramTranscription
-        text = getDeepgramTranscription(response[3])
+        from deeptranscribe import getDeepgramTranscription, localtranscription
+        # text = getDeepgramTranscription(response[2])
+        text = localtranscription(filepath+'jargonspeak_'+filename, 'en-us')
         new_text = text['results']['channels'][0]['alternatives'][0]['transcript']
         from levenshteinalgorithm import calculate_similarity
         similarity = calculate_similarity(original_text, new_text)
+        print(original_text)
+        print(new_text)
         st.info(f'{similarity:.2f}% Accurate to Transcription')
