@@ -39,7 +39,7 @@ languages = {
 st.title("Automated AI Audio/Video Dubbing")
 st.text('Translate, caption or dub any video in 20 languages.')
 st.text('No sign up information. No watermark. No licensing.')
-st.text('Unlimited usage at $0.79/minute. Voice cloning included. (15 minute maximum for Beta)')
+st.text('Unlimited usage at $0.79/minute. Voice cloning included. (5 minute maximum for Beta)')
 
 video_url = st.text_input('Paste YouTube link, video url, or note ID from the Nostr:')
 uploaded_file = st.file_uploader("Upload a file:", type=["mp4","mov","mp3","wav"])
@@ -117,7 +117,7 @@ if voice != 'None' or cc:
                     os.makedirs(filepath)
 
             # Get duration & download if less than max length
-            duration = detectvideo(video=video,max_length=1000000,filepath=filepath, filename=filename)
+            duration = detectvideo(video=video,max_length=300,filepath=filepath, filename=filename)
             video = filepath+filename
 
         with st.spinner('Pending lightning invoice...'):
