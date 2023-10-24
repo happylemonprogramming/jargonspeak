@@ -1,6 +1,19 @@
 import requests
 import os
 
+# Language Pairs:
+# DE (German)
+# EN (English)
+# ES (Spanish)
+# FR (French)
+# IT (Italian)
+# JA (Japanese)
+# NL (Dutch)
+# PL (Polish)
+# PT (Portuguese)
+# RU (Russian)
+# ZH (Chinese)
+
 # Replace '[yourAuthKey]' with your actual DeepL-Auth-Key
 auth_key = os.environ['deeplapikey']
 

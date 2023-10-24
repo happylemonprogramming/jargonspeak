@@ -52,11 +52,14 @@ def extract_audio(mp4_filename, audio_filename='videovoice.wav'):
     print(f"Audio extracted successfully! ({round(time.time()-start,2)}s)")
 
 def audioslicing(video_url, start, end):
-    # Load the video clip
-    video_clip = VideoFileClip(video_url)
+    if 'http' in video_url:
+        # Load the video clip
+        video_clip = VideoFileClip(video_url)
 
-    # Extract audio from the video clip
-    audio = video_clip.audio
+        # Extract audio from the video clip
+        audio = video_clip.audio
+    else:
+        audio = AudioFileClip(video_url)
 
     # Export the audio to a temporary WAV file
     temp_audio_file = "temp_audio.wav"
@@ -70,8 +73,8 @@ def audioslicing(video_url, start, end):
         sliced_audio = audio_segment[start:end]
 
         # Export sliced audio to the specified output filename
-        output = 'audioslice.wav'
-        sliced_audio.export(output, format='wav')
+        output = 'audioslice.mp3'
+        sliced_audio.export(output, format='mp3')
     finally:
         # Clean up: delete the temporary audio file
         os.remove(temp_audio_file)
@@ -174,5 +177,10 @@ if __name__ == "__main__":
     # new_audio_path = r"C:\Users\clayt\Videos\Video Translation\Julie Translations\Test\51.wav"
     # filename = os.path.basename(original_path)
     # add_new_audio(input_video=original_path,new_audio=new_audio_path,subtitles=None,output_video=f'jargonspeak_{filename}')
-    file = r'C:\Users\clayt\Documents\Programming\jargonspeak\files\77dd48b86c7911eeaf4f18ff0f367121\extractedaudio.mp3'
-    audiospeed(file,'slow.mp3',0.60)
+    # file = r'C:\Users\clayt\Documents\Programming\jargonspeak\files\77dd48b86c7911eeaf4f18ff0f367121\extractedaudio.mp3'
+    # audiospeed(file,'slow.mp3',0.60)
+    # file = r'C:\Users\clayt\Documents\Programming\jargonspeak\bitcoin_audible10.wav'
+    # audioslicing(file, 0,58000)
+    file = r'C:\Users\clayt\Documents\Programming\jargonspeak\micorazon.mp4'
+    extract_audio(file,'corazonaudio.mp3')
+    

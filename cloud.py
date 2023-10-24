@@ -29,7 +29,7 @@ def serverlink(local_filepath, object_name='video.mp4'):
             'Bucket': bucket_name,
             'Key': object_name,
             'ResponseContentDisposition': f'attachment; filename="{object_name}"' if object_name else 'attachment'
-        },
+        }
         # ExpiresIn=24*60*60
     )
 
@@ -38,6 +38,6 @@ def serverlink(local_filepath, object_name='video.mp4'):
     return url
 
 if __name__ == "__main__":
-    path = r"C:\Users\clayt\Videos\Video Translation\Guy Swan Translation\original.mp4"
-    name = 'guy.mp4'
+    path = r"c:\Users\clayt\Downloads\Jargonspeak on Nostr.mp4"
+    name = 'jargonspeakonthenostr.mp4'
     print(serverlink(path,name))

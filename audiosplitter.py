@@ -124,7 +124,7 @@ def splitaudio(audio):
             status, vocals, background = getjobstatus(job_id)
             print('Split complete.')
             break
-        elif status == 'FAILED':
+        elif status == 'FAILED' or status == None:
             raise Exception(f'Split failed.')
         else:
             print('Audio split in progress...')
@@ -134,8 +134,9 @@ if __name__ == '__main__':
     # uploadUrl, downloadUrl = requestupload()
     # uploadfile(uploadUrl, 'videovoice.mp3', 'input.')
     # job_id = createjob('Ye Job', downloadUrl)
-    job_id = 'd7ee2889-20a3-472f-8bc9-3d1eadd41213'
-    print(getjobstatus(job_id))
+    # job_id = 'd7ee2889-20a3-472f-8bc9-3d1eadd41213'
+    # print(getjobstatus(job_id))
     # vocals, background = splitaudio('videovoice.mp3')
     # print(vocals)
     # print(background)
+    print(splitaudio(r'C:\Users\clayt\Documents\Programming\jargonspeak\files\9d5b8a9b6fde11ee97d118ff0f367121\extractedaudio.mp3'))

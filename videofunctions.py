@@ -3,6 +3,7 @@ import time
 import subprocess
 from pytube import YouTube
 from moviepy.video.io.VideoFileClip import VideoFileClip
+from moviepy.editor import AudioFileClip
 import requests
 
 def downloadvideo(url, local_filename):
@@ -44,17 +45,18 @@ def youtubedownload(video, path):
 	
 
 def detectvideo(video, max_length, filepath, filename):
-	# Local file
-	if 'http' not in video:
-		# Get the duration of the video in seconds.
-		duration = VideoFileClip(video).duration
-		if duration < max_length:
-			downloadvideo(video, filepath+filename)
-		else:
-			raise Exception(f'Video length exceeds {max_length}s')
+	print(video)
+	# # Local file
+	# if 'http' not in video:
+	# 	# Get the duration of the video in seconds.
+	# 	duration = VideoFileClip(video).duration
+	# 	if duration < max_length:
+	# 		downloadvideo(video, filepath+filename)
+	# 	else:
+	# 		raise Exception(f'Video length exceeds {max_length}s')
 
     # Youtube
-	elif 'youtube' in video or 'youtu.be' in video:
+	if 'youtube' in video or 'youtu.be' in video:
 		# If youtube
 		print('YouTube video detected')
 		file = YouTube(video)
@@ -69,8 +71,21 @@ def detectvideo(video, max_length, filepath, filename):
 			raise Exception(f'Video length exceeds {max_length}s')
 
     # Any other link
+	elif 'mp3' in video or 'wav' in video:
+		try:
+			print('Video url detected')
+			duration = AudioFileClip(video).duration
+		except Exception as e:
+			return f"Error: {str(e)}"
+		if duration < max_length:
+			downloadvideo(video, filepath+filename)
+		else:
+			raise Exception(f'Video length exceeds {max_length}s')
+
+    # Any other link
 	else:
 		try:
+			print('Video url detected')
 			duration = VideoFileClip(video).duration
 		except Exception as e:
 			return f"Error: {str(e)}"
@@ -85,5 +100,9 @@ if __name__ == '__main__':
     # youtubedownload(url,'original.mp4')
     # crop('original.mp4','doordonot.mp4','59')
     # url = 'http://soundfxcenter.com/movies/star-wars/8d82b5_Lightsaber_Idle_Hum_Sound_Effect.mp3'
-    url = 'https://www.youtube.com/shorts/z8jgCkpdwd4'
-    youtubedownload(url, 'video.mp4')
+    url = 'https://www.youtube.com/watch?v=BpmtYIeMzf8'
+    youtubedownload(url, 'micorazon.mp4')
+	# url = 'https://d3ctxlq1ktw2nl.cloudfront.net/staging/2023-9-18/fdd10ffc-e065-c367-7ac2-a66b356837e6.mp3'
+	# downloadvideo(url,'howtobuybitcoin.mp3')
+	# duration = VideoFileClip('https://video.nostr.build/401b8475dc5aa523b2edc7fbeb462f09f168aac8f268a598ac3556aca279c7fa.mp4').duration
+	# print(duration)

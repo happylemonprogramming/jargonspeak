@@ -35,7 +35,7 @@ languages = {'English': 'en', 'Australia': 'en-AU', 'United Kingdom': 'en-GB', '
             'Tamil (BETA)': 'ta',
             'Ukranian (BETA)': 'uk'}
 
-def localtranscription(localpath, language):
+def localtranscription(localpath, language, model='nova-2-ea'):
     start = time.time()
 
     # Initializes the Deepgram SDK
@@ -46,7 +46,8 @@ def localtranscription(localpath, language):
     if language in english:
         # model = 'nova'
         # model = 'whisper-large'
-        model='nova-2-ea'
+        # model='nova-2-ea'
+        model = model
     elif language in enhanced:
         # model = 'enhanced'
         model = 'whisper-large'
@@ -64,10 +65,10 @@ def localtranscription(localpath, language):
 
     return response
 
-def getDeepgramTranscription(p_url):
+def getDeepgramTranscription(p_url, model='nova-2-ea'):
     start = time.time()
     # Use this to get subtitles in English
-    url = "https://api.deepgram.com/v1/listen?model=nova-2-ea&language=en&punctuate=true&diarize=true&smart_format=true"
+    url = f"https://api.deepgram.com/v1/listen?model={model}&language=en&punctuate=true&diarize=true&smart_format=true"
     # url = "https://api.deepgram.com/v1/listen?model=whisper-large&language=en&punctuate=true&diarize=true&smart_format=true"
 
     # Use this to get subtitles in the same language as the audio/video
@@ -180,9 +181,9 @@ if __name__ == '__main__':
     # output = getDeepgramTranscription(p_url)
     
     # Local Function
-    path = r'C:\Users\clayt\Documents\Programming\jargonspeak\video.mp4'
+    path = r'C:\Users\clayt\Documents\Programming\jargonspeak\files\087cd6ee722b11ee852b18ff0f367121\vocals.wav'
     output = localtranscription(path,languages['English'])
-        
+
     # Output Reading
     print('Output: ', output, type(output))
     # keys = [key for key in output]

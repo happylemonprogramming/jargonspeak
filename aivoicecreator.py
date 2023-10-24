@@ -3,6 +3,44 @@ import os
 import requests
 import time
 
+# Languages
+# 🇺🇸 English (USA)
+# 🇬🇧 English (UK)
+# 🇦🇺 English (Australia)
+# 🇨🇦 English (Canada)
+# 🇯🇵 Japanese
+# 🇨🇳 Chinese
+# 🇩🇪 German
+# 🇮🇳 Hindi
+# 🇫🇷 French (France)
+# 🇨🇦 French (Canada)
+# 🇰🇷 Korean
+# 🇧🇷 Portuguese (Brazil)
+# 🇵🇹 Portuguese (Portugal)
+# 🇮🇹 Italian
+# 🇪🇸 Spanish (Spain)
+# 🇲🇽 Spanish (Mexico)
+# 🇮🇩 Indonesian
+# 🇳🇱 Dutch
+# 🇹🇷 Turkish
+# 🇵🇭 Filipino
+# 🇵🇱 Polish
+# 🇸🇪 Swedish
+# 🇧🇬 Bulgarian
+# 🇷🇴 Romanian
+# 🇸🇦 Arabic (Saudi Arabia)
+# 🇦🇪 Arabic (UAE)
+# 🇨🇿 Czech
+# 🇬🇷 Greek
+# 🇫🇮 Finnish
+# 🇭🇷 Croatian
+# 🇲🇾 Malay
+# 🇸🇰 Slovak
+# 🇩🇰 Danish
+# 🇮🇳 Tamil
+# 🇺🇦 Ukrainian
+
+
 set_api_key(os.environ.get('elevenlabsapikey'))
 
 def aispeech(text=None,voice='Bella',output='speechoutput.wav',text_file=None):
@@ -48,7 +86,7 @@ def addvoice(audio,name):
 
     response = requests.post(url, headers=headers, data=data, files=files)
     output = response.text
-    print(f"New AI voice added successfully! ({round(time.time()-start,2)}s)")
+    print(f"AI Voice POST Request! ({round(time.time()-start,2)}s)")
     return output
 
 
@@ -81,8 +119,8 @@ if __name__ == '__main__':
     # voicepath = r'C:\Users\clayt\Documents\Programming\translait\output\iamyourfather\vocals.wav'
     # vader = addvoice(voicepath,'Vader')
     # print(vader)
-    aispeech(text='Luke, I am your father.',voice='mzzyrHBdOjyMhiNl1rT7',output='vader.wav',text_file=None)
-
+    # aispeech(text='Luke, I am your father.',voice='mzzyrHBdOjyMhiNl1rT7',output='vader.wav',text_file=None)
+    addvoice(r'C:\Users\clayt\Documents\Programming\jargonspeak\files\9ba0465e6faf11eebef618ff0f367121\original.mp4', 'jobs')
 
     # {'tier': 'creator', 
     #  'character_count': 67386, 

@@ -4,7 +4,7 @@
 import streamlit as st
 import os
 import time
-from translatevideo import translatevideo
+from translatevideo import translatevideo, translateaudio
 from lightningpay import *
 from videofunctions import detectvideo
 from qrcodegenerator import *
@@ -38,15 +38,11 @@ languages = {
 # Front Page
 st.title("Automated AI Audio/Video Dubbing")
 st.text('Translate, caption or dub any video in 20 languages.')
-st.text('No sign up information.')
-st.text('No watermark.')
-st.text('No licensing.')
-st.text('Unlimited usage at $1/minute.')
-st.text('Voice cloning included.')
-st.text('15 minute maximum for Beta')
+st.text('No sign up information. No watermark. No licensing.')
+st.text('Unlimited usage at $0.79/minute. Voice cloning included. (15 minute maximum for Beta)')
 
-video_url = st.text_input('Paste YouTube or video link:')
-uploaded_file = st.file_uploader("Upload a file:", type=["mp4","mov"])
+video_url = st.text_input('Paste YouTube link, video url, or note ID from the Nostr:')
+uploaded_file = st.file_uploader("Upload a file:", type=["mp4","mov","mp3","wav"])
 # voice = st.selectbox('Voice:', ['None','Speaker','Bella','Josh'])
 voice = 'Speaker'
 speech = st.selectbox('Language:', [key for key in languages])
@@ -59,7 +55,6 @@ promo = st.text_input('Enter Promo Code:')
 if voice != 'None' or cc:
     check = st.checkbox('I understand this application is experimental and AI content can be unpredictable.')
     click = st.button('Launch!')
-    # TODO: add dynamic dubbing pricing using bitcoin
     if click and check:
         with st.spinner('Downloading video...'):
             # Uploaded file detection
@@ -75,9 +70,15 @@ if voice != 'None' or cc:
                 # File type detection
                 filetype = uploaded_file.name[-4:]
                 if filetype.lower() == '.mp3':
-                    pass
+                    filename = 'original.mp3'
+                    video = filepath+filename
+                    file_contents = uploaded_file.read()
+                    with open(filepath+filename, "wb") as f:
+                        f.write(file_contents)
+
                 if filetype.lower() == '.wav':
                     pass
+
                 if filetype.lower() == '.mp4' or filetype.lower() == '.mov':
                     filename = 'original.mp4'
                     video = filepath+filename
@@ -92,9 +93,21 @@ if voice != 'None' or cc:
 
             # URL file detection
             if video_url:
+                print('URL Detected')
+                if 'note' in video_url:
+                    print('Note Detected')
+                    from pynostr.key import PublicKey
+                    from getevent import getevent
+                    notehex = PublicKey.from_npub(video_url).hex()
+                    event = getevent(ids=[notehex])
+                    nostr_video = event[0][1]['tags'][1][1]
+                    video_url = nostr_video
+                    print('The Nostr url: ', video_url)
+    
                 video = video_url
                 # Existing file detection
                 visitorid = uuid.uuid1().hex
+                print('User: ', visitorid)
                 # filepath = os.getcwd() + '/files/'
                 filepath = os.getcwd() + f'/files/{visitorid}/'
                 filename = 'original.mp4'
@@ -135,12 +148,14 @@ if voice != 'None' or cc:
             placeholder2 = st.empty()
             placeholder3 = st.empty()
             placeholder4 = st.empty()
+            placeholder5 = st.empty()
             inv_status = invoice_status(invid)
             while True:
                 if inv_status == 'UNPAID' and promo.lower() != 'superspecialcode' and invoice_time>=1:
                     placeholder1.warning(f'Send ${price:.2f} to Translate {duration}s of Content')
                     placeholder2.warning(f'Time remaining on invoice: {invoice_time}s')
                     placeholder3.image(binaryimagedata)
+                    placeholder4.code(lninv)
                     inv_status = invoice_status(invid)
                     invoice_time -= 1
                     time.sleep(1)
@@ -148,12 +163,14 @@ if voice != 'None' or cc:
                     placeholder1.empty()
                     placeholder2.empty()
                     placeholder3.empty()
-                    placeholder4.error('Invoice expired, try again. :(')
+                    placeholder4.empty()
+                    placeholder5.error('Invoice expired, try again. :(')
                 elif inv_status == 'PAID' or promo.lower() == 'superspecialcode':
                     placeholder1.empty()
                     placeholder2.empty()
                     placeholder3.empty()
-                    placeholder4.success(f'Paid ${price:.2f} to Translate {duration}s of Content! 🤖')
+                    placeholder4.empty()
+                    placeholder5.success(f'Paid ${price:.2f} to Translate {duration}s of Content! 🤖')
                     break
                 else:
                     st.error('Invoicing error, try again :(')
@@ -162,15 +179,21 @@ if voice != 'None' or cc:
         with st.spinner('Running... This may take a few minutes.'):
             start = time.time()
             filename = filename.strip().replace(' ','')
-            response = translatevideo(video, voice=voice, captions=cc, filepath=filepath, filename=filename, language=language)
+            if 'mp4' in filename or 'mov' in filename:
+                response = translatevideo(video, voice=voice, captions=cc, filepath=filepath, filename=filename, language=language)
+            elif 'mp3' in filename or 'wav' in filename:
+                response = translateaudio(video, voice=voice, filepath=filepath, filename=filename, language=language)
             formatted_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-start))
             print(f"Total program ran successfully! ({formatted_time})")
             # print(f"Total program ran successfully! ({round((time.time()-start)/60.00,2)}min)")
 
         # Show video & download button
         placeholder4.empty()
-        st.success('Here is the translated video:')
-        st.video(filepath+'jargonspeak_'+filename)
+        st.success('Here is the translated media:')
+        if 'mp4' in filename or 'mov' in filename:
+            st.video(filepath+'jargonspeak_'+filename)
+        elif 'mp3' in filename or 'wav' in filename:
+            st.audio(filepath+'jargonspeak_'+filename)
         st.link_button(label='Download', url=response[2]) # AWS Download
         # with open(filepath+'jargonspeak_'+filename, 'rb') as file: # Memory Download
         #     # Read the binary data from the file
@@ -187,4 +210,4 @@ if voice != 'None' or cc:
         similarity = calculate_similarity(original_text, new_text)
         print(original_text)
         print(new_text)
-        st.info(f'{similarity:.2f}% Accurate to Transcription')
+        print(f'{similarity:.2f}% Accurate to Transcription')
