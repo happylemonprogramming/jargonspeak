@@ -51,9 +51,11 @@ speech = st.selectbox('Language:', [key for key in languages])
 language = languages[speech]
 # cc = st.toggle('Subtitles') #TODO: work on subtitles
 cc = False
-clip_start = int(st.number_input('Clip Start (optional)', min_value=0, step=1))
-clip_end = int(st.number_input('Clip End (optional)',min_value=0, step=1))
-
+col1, col2 = st.columns(2)
+with col1:
+    clip_start = int(st.number_input('Clip Start (optional)', min_value=0, step=1))
+with col2:
+    clip_end = int(st.number_input('Clip End (optional)',min_value=0, step=1))
 promo = st.text_input('Enter Promo Code (optional):')
 
 # Voice & Subtitle logic path
