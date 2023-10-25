@@ -45,13 +45,14 @@ def reduceaudiovolume(input_file, output_file, volume):
 def extract_audio(mp4_filename, audio_filename='videovoice.wav'):
     start = time.time()
     video_clip = VideoFileClip(mp4_filename)
+    print('Extract Audio response: ', video_clip) # debug
     audio_clip = video_clip.audio
 
     audio_clip.write_audiofile(audio_filename)
     audio_clip.close()
     print(f"Audio extracted successfully! ({round(time.time()-start,2)}s)")
 
-def audioslicing(video_url, start, end):
+def audioslicing(video_url, start, end, output = 'audioslice.mp3'):
     if 'http' in video_url:
         # Load the video clip
         video_clip = VideoFileClip(video_url)
@@ -69,11 +70,13 @@ def audioslicing(video_url, start, end):
         # Convert audio to AudioSegment for slicing
         audio_segment = AudioSegment.from_file(temp_audio_file)
 
+        # Convert to milliseconds from seconds
+        start = start*1000
+        end = end*1000
         # Slice the audio segment
         sliced_audio = audio_segment[start:end]
 
         # Export sliced audio to the specified output filename
-        output = 'audioslice.mp3'
         sliced_audio.export(output, format='mp3')
     finally:
         # Clean up: delete the temporary audio file

@@ -5,8 +5,9 @@ import streamlit as st
 import os
 import time
 from translatevideo import translatevideo, translateaudio
+from videofunctions import split, detectvideo
+from audiofunctions import audioslicing
 from lightningpay import *
-from videofunctions import detectvideo
 from qrcodegenerator import *
 import uuid
 
@@ -36,7 +37,8 @@ languages = {
 }
 
 # Front Page
-st.title("Automated AI Audio/Video Dubbing")
+st.title("Jargonspeak")
+st.text('Fully automated AI audio/video dubbing.')
 st.text('Translate, caption or dub any video in 20 languages.')
 st.text('No sign up information. No watermark. No licensing.')
 st.text('Unlimited usage at $0.79/minute. Voice cloning included. (5 minute maximum for Beta)')
@@ -49,7 +51,10 @@ speech = st.selectbox('Language:', [key for key in languages])
 language = languages[speech]
 # cc = st.toggle('Subtitles') #TODO: work on subtitles
 cc = False
-promo = st.text_input('Enter Promo Code:')
+clip_start = int(st.number_input('Clip Start (optional)', min_value=0, step=1))
+clip_end = int(st.number_input('Clip End (optional)',min_value=0, step=1))
+
+promo = st.text_input('Enter Promo Code (optional):')
 
 # Voice & Subtitle logic path
 if voice != 'None' or cc:
@@ -110,14 +115,28 @@ if voice != 'None' or cc:
                 print('User: ', visitorid)
                 # filepath = os.getcwd() + '/files/'
                 filepath = os.getcwd() + f'/files/{visitorid}/'
-                filename = 'original.mp4'
+                filetype = video[-4:]
+                if filetype.lower() == '.mp3':
+                    filename = 'original.mp3'
+                if filetype.lower() == '.mp4':
+                    filename = 'original.mp4'
                 if os.path.exists(filepath):
                     pass
                 else:
                     os.makedirs(filepath)
 
             # Get duration & download if less than max length
-            duration = detectvideo(video=video,max_length=300,filepath=filepath, filename=filename)
+            print(clip_end, type(clip_end))
+            if clip_end != 0:
+                max_length = 3600 #hard limit of 1-hour for now
+                duration = clip_end-clip_start
+                print(duration, type(duration))
+                detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
+                if duration < 0:
+                    raise Exception('Start time cannot be after end time.')
+            else:
+                max_length = 300
+                duration = detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
             video = filepath+filename
 
         with st.spinner('Pending lightning invoice...'):
@@ -127,7 +146,7 @@ if voice != 'None' or cc:
             # $0.30/1,000 characters Elevenlabs (AI Voiceover) (+$22/month)
             # $0.023/GB Amazon S3
             # $0.010/hour Heroku
-            
+
             cost = 0.43 # $/MIN
             margin = 0.36 # $/MIN
             price = round((cost+margin)*duration/60,2)
@@ -180,8 +199,18 @@ if voice != 'None' or cc:
             start = time.time()
             filename = filename.strip().replace(' ','')
             if 'mp4' in filename or 'mov' in filename:
+                if clip_end != 0:
+                    print(video, type(video))
+                    split(video, filepath+'cropped.mp4', clip_start, clip_end)
+                    filename = 'cropped.mp4'
+                    video = filepath+filename
                 response = translatevideo(video, voice=voice, captions=cc, filepath=filepath, filename=filename, language=language)
             elif 'mp3' in filename or 'wav' in filename:
+                if clip_end != 0:
+                    print(video, type(video))
+                    audioslicing(video, clip_start, clip_end, filepath+'cropped.mp3')
+                    filename = 'cropped.mp3'
+                    video = filepath+filename
                 response = translateaudio(video, voice=voice, filepath=filepath, filename=filename, language=language)
             formatted_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-start))
             print(f"Total program ran successfully! ({formatted_time})")

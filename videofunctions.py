@@ -36,6 +36,16 @@ def crop(input_vid, output_vid, duration):
     subprocess.run(ffmpeg_cmd)
     print(f"New audio/video created successfully! ({round(time.time()-start,2)}s)")
 
+def split(input_vid, output_vid, start_time, end_time):
+    start = time.time()
+    ffmpeg_cmd = [
+        'ffmpeg',
+        '-i', input_vid,
+        '-ss', str(start_time), '-to', str(end_time),
+		'-c:v', 'copy', '-c:a', 'copy', output_vid
+    ]
+    subprocess.run(ffmpeg_cmd)
+    print(f"New audio/video created successfully! ({round(time.time()-start,2)}s)")
 
 def youtubedownload(video, path):
 	file = YouTube(video)
@@ -57,20 +67,28 @@ def detectvideo(video, max_length, filepath, filename):
 
     # Youtube
 	if 'youtube' in video or 'youtu.be' in video:
-		# If youtube
 		print('YouTube video detected')
-		file = YouTube(video)
-		duration = file.length
-		stream = file.streams.filter(progressive=True).order_by('resolution').last() # first lowest, last highest
-		if duration < max_length:
-			video = filepath+filename.strip()
-			# print(filename)
-			stream.download(filename=video)
-			print('Video saved locally')
-		else:
-			raise Exception(f'Video length exceeds {max_length}s')
+		retries = 0
+		max_retries = 100
+		# Adding retry attempts because 503 and 403 exceptions occur randomly
+		while retries < max_retries:
+			try:
+				file = YouTube(video)
+				duration = file.length
+				stream = file.streams.filter(progressive=True).order_by('resolution').last() # first lowest, last highest
+				if duration < max_length:
+					video = filepath+filename.strip()
+					# print(filename)
+					stream.download(filename=video)
+					print('Video saved locally')
+					break
+				else:
+					raise Exception(f'Video length exceeds {max_length}s')
+			except:
+				print(f'HTTP 503: Retrying ({retries + 1}/{max_retries})...')
+				retries += 1
 
-    # Any other link
+    # Audio files
 	elif 'mp3' in video or 'wav' in video:
 		try:
 			print('Video url detected')
@@ -100,9 +118,11 @@ if __name__ == '__main__':
     # youtubedownload(url,'original.mp4')
     # crop('original.mp4','doordonot.mp4','59')
     # url = 'http://soundfxcenter.com/movies/star-wars/8d82b5_Lightsaber_Idle_Hum_Sound_Effect.mp3'
-    url = 'https://www.youtube.com/watch?v=BpmtYIeMzf8'
-    youtubedownload(url, 'micorazon.mp4')
+    # url = 'https://www.youtube.com/watch?v=Nn2H-XKEN98'
+    # youtubedownload(url, 'jeffbooth.mp4')
 	# url = 'https://d3ctxlq1ktw2nl.cloudfront.net/staging/2023-9-18/fdd10ffc-e065-c367-7ac2-a66b356837e6.mp3'
 	# downloadvideo(url,'howtobuybitcoin.mp3')
 	# duration = VideoFileClip('https://video.nostr.build/401b8475dc5aa523b2edc7fbeb462f09f168aac8f268a598ac3556aca279c7fa.mp4').duration
 	# print(duration)
+	path = r'C:\Users\clayt\Documents\Programming\jargonspeak/files/f9ec6de472ec11eeba4418ff0f367121/'
+	split(path+'original.mp4',path+'crop.mp4',822,905)
