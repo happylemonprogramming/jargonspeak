@@ -64,15 +64,24 @@ if voice != 'None' or cc:
     click = st.button('Launch!')
     if click and check:
         with st.spinner('Downloading video...'):
+            # User folder
+            visitorid = uuid.uuid1().hex
+            print('User: ', visitorid)
+            # filepath = os.getcwd() + '/files/'
+            filepath = os.getcwd() + f'/files/{visitorid}/'
+            if os.path.exists(filepath):
+                pass
+            else:
+                os.makedirs(filepath)
             # Uploaded file detection
             if uploaded_file is not None:
-                # Unique identifier folder path creation
-                visitorid = uuid.uuid1().hex
-                filepath = os.getcwd() + f'/files/{visitorid}/'
-                if os.path.exists(filepath):
-                    pass
-                else:
-                    os.makedirs(filepath)
+                # # Unique identifier folder path creation
+                # visitorid = uuid.uuid1().hex
+                # filepath = os.getcwd() + f'/files/{visitorid}/'
+                # if os.path.exists(filepath):
+                #     pass
+                # else:
+                #     os.makedirs(filepath)
 
                 # File type detection
                 filetype = uploaded_file.name[-4:]
@@ -112,30 +121,31 @@ if voice != 'None' or cc:
                     print('The Nostr url: ', video_url)
     
                 video = video_url
-                # Existing file detection
-                visitorid = uuid.uuid1().hex
-                print('User: ', visitorid)
-                # filepath = os.getcwd() + '/files/'
-                filepath = os.getcwd() + f'/files/{visitorid}/'
-                filetype = video[-4:]
-                if filetype.lower() == '.mp3':
-                    filename = 'original.mp3'
-                if filetype.lower() == '.mp4':
-                    filename = 'original.mp4'
-                if os.path.exists(filepath):
-                    pass
-                else:
-                    os.makedirs(filepath)
+
+
+            filetype = video[-4:]
+            print(filetype)
+            if filetype.lower() == '.mp3':
+                filename = 'original.mp3'
+            if filetype.lower() == '.mp4' or 'youtube' in video:
+                filename = 'original.mp4'
+            print(filename)
+            if os.path.exists(filepath):
+                pass
+            else:
+                os.makedirs(filepath)
 
             # Get duration & download if less than max length
             print(clip_end, type(clip_end))
             if clip_end != 0:
                 max_length = 3600 #hard limit of 1-hour for now
                 duration = clip_end-clip_start
-                print(duration, type(duration))
-                detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
                 if duration < 0:
                     raise Exception('Start time cannot be after end time.')
+                print(duration, type(duration))
+                detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
+            elif (clip_end-clip_start) < 0:
+                raise Exception('Start time cannot be after end time.')
             else:
                 max_length = 300
                 duration = detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
