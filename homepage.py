@@ -78,8 +78,8 @@ if voice != 'None' or cc:
             visitorid = uuid.uuid1().hex
             print('User: ', visitorid)
             # filepath = os.getcwd() + '/files/'
-            # filepath = os.getcwd() + f'/files/{visitorid}/'
-            filepath = f'files/{visitorid}/'
+            filepath = os.getcwd() + f'/files/{visitorid}/'
+            # filepath = f'files/{visitorid}/' # Doesn't work on Heroku
             if os.path.exists(filepath):
                 pass
             else:
