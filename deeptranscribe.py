@@ -67,26 +67,32 @@ def localtranscription(localpath, language, model='nova-2-ea'):
 
 def getDeepgramTranscription(p_url, model='nova-2-ea'):
     start = time.time()
-    # Use this to get subtitles in English
-    url = f"https://api.deepgram.com/v1/listen?model={model}&language=en&punctuate=true&diarize=true&smart_format=true"
-    # url = "https://api.deepgram.com/v1/listen?model=whisper-large&language=en&punctuate=true&diarize=true&smart_format=true"
+    transcript = ''
+    attempts = 1
+    while transcript == '' and attempts<=2:
+        # Use this to get subtitles in English
+        url = f"https://api.deepgram.com/v1/listen?model={model}&language=en&punctuate=true&diarize=true&smart_format=true"
+        # url = "https://api.deepgram.com/v1/listen?model=whisper-large&language=en&punctuate=true&diarize=true&smart_format=true"
 
-    # Use this to get subtitles in the same language as the audio/video
-    # url = "https://api.deepgram.com/v1/listen?model=whisper-large&detect_language=true"
+        # Use this to get subtitles in the same language as the audio/video
+        # url = "https://api.deepgram.com/v1/listen?model=whisper-large&detect_language=true"
 
-    payload = {
-        "url": p_url
-    }
+        payload = {
+            "url": p_url
+        }
 
-    headers = {
-        "Authorization": 'Token ' + DEEPGRAM_API_KEY,
-        "content-type": "application/json"
-    }
+        headers = {
+            "Authorization": 'Token ' + DEEPGRAM_API_KEY,
+            "content-type": "application/json"
+        }
 
-    response = requests.request("POST", url, headers=headers, json=payload)
-    output = response.json()
-
-    print(f"Transcribed url successfully! ({round(time.time()-start,2)}s)")
+        response = requests.request("POST", url, headers=headers, json=payload)
+        output = response.json()
+        transcript = output['results']['channels'][0]['alternatives'][0]['transcript']
+        if transcript == '':
+            model = 'whisper-large'
+        print(f"Transcribed url successfully! ({round(time.time()-start,2)}s)")
+        attempts+=1
 
     return output
 
@@ -112,21 +118,35 @@ def extract_sentences_from_srt(srt):
     text = ' '.join(words)
     return text
 
-def convert_to_srt(data, path, level='sentence'):
+
+def format_time(seconds):
+    # Convert seconds to hours, minutes, seconds, milliseconds format
+    hours, remainder = divmod(seconds, 3600)
+    minutes, remainder = divmod(remainder, 60)
+    seconds, milliseconds = divmod(remainder, 1)
+    return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d},{int(milliseconds*1000):03d}"
+
+def convert_to_srtez(texts, starts, ends, path=''):
+    output_filename = path + 'subtitles.srt'
+    
+    with open(output_filename, 'w', encoding='utf-8') as f:
+        for i, (text, start, end) in enumerate(zip(texts, starts, ends), start=1):
+            start_time = format_time(start)
+            end_time = format_time(end)
+            f.write(f"{i}\n")
+            f.write(f"{start_time} --> {end_time}\n")
+            f.write(f"{text}\n\n")
+
+    return output_filename
+
+def convert_to_srt(data, path='', level='sentence'):
     start = time.time()
     print('Data input type: ', type(data))
-    word_level = data['words']
-    sentence_level = data['paragraphs']['paragraphs']
 
-    def format_time(seconds):
-        # Convert seconds to hours, minutes, seconds, milliseconds format
-        hours, remainder = divmod(seconds, 3600)
-        minutes, remainder = divmod(remainder, 60)
-        seconds, milliseconds = divmod(remainder, 1)
-        return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d},{int(milliseconds*1000):03d}"
 
     if level == 'word':
         # Word-Level
+        word_level = data['words']
         data = word_level
         output_filename = path + 'word_level.srt'
         with open(output_filename, 'w') as f:
@@ -140,6 +160,7 @@ def convert_to_srt(data, path, level='sentence'):
 
     elif level == 'sentence':
         # Sentence-Level
+        sentence_level = data['paragraphs']['paragraphs']
         output_filename = path + 'sentence_level.srt'
 
         # intialize lists
@@ -176,26 +197,32 @@ def convert_to_srt(data, path, level='sentence'):
 if __name__ == '__main__':
     # Hyperlink Function
     # p_url = 'https://db9c2d0e80dc9774067d0f439aa504a7.cdn.bubble.io/f1692677290753x434684319755118660/RPReplay_Final1692675241.MP4'
-    # # p_url = 'https://s3.amazonaws.com/appforest_uf/f1678940868271x564994871606250500/aistorytelling.py%20-%20Untitled%20%28Workspace%29%20-%20Visual%20Studio%20Code%202023-01-02%2011-12-25.mp4'
+    p_url = 'https://s3.amazonaws.com/appforest_uf/f1678940868271x564994871606250500/aistorytelling.py%20-%20Untitled%20%28Workspace%29%20-%20Visual%20Studio%20Code%202023-01-02%2011-12-25.mp4'
     # # p_url = 'https://www.youtube.com/watch?v=X--l6Qy5Tb0'
-    # output = getDeepgramTranscription(p_url)
+    output = getDeepgramTranscription(p_url)
     
-    # Local Function
-    path = r'C:\Users\clayt\Documents\Programming\jargonspeak\files\087cd6ee722b11ee852b18ff0f367121\vocals.wav'
-    output = localtranscription(path,languages['English'])
+    # # Local Function
+    # path = r'C:\Users\clayt\Documents\Programming\jargonspeak\fiverrcustomer.mp4'
+    # output = localtranscription(path,languages['English'])
 
-    # Output Reading
+    # # Output Reading
     print('Output: ', output, type(output))
     # keys = [key for key in output]
     # print(keys)
     # raw_text = output['results']['channels'][0]['alternatives'][0]['transcript']
-    # subtitle_data = output['results']['channels'][0]['alternatives'][0]
-    paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
+    subtitle_data = output['results']['channels'][0]['alternatives'][0]
+    convert_to_srt(subtitle_data)
+    paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs'][0]['sentences']
+    print(paragraphs[0])
+    print(paragraphs[0]['text'])
+    paragraphs[0]['text'] = 'I like big butts'
+    print(paragraphs[0]['text'])
+    # paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
     # words = output['results']['channels'][0]['alternatives'][0]['words']
     # print('Raw Text: ', raw_text)
     # print('Subtitle Data: ', subtitle_data)
-    print('Paragraphs: ', paragraphs)
+    # print('Paragraphs: ', paragraphs)
     # print('Words: ', words)
-    with open('yodatranscript.txt', 'w', encoding='utf-8') as file:
-        file.write(str(output))
+    with open('subtitledata.txt', 'w', encoding='utf-8') as file:
+        file.write(str(subtitle_data))
     print('Video transcribed')

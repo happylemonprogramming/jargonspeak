@@ -37,25 +37,35 @@ languages = {
 }
 
 # Front Page
-st.title("Jargonspeak")
-st.text('Fully automated AI audio/video dubbing.')
-st.text('Translate, caption or dub any video in 20 languages.')
+st.title("Jargonspeak (Alpha)")
+st.text('Fully automated AI media dubbing, translation, and captioning in 20 languages.')
 st.text('No sign up information. No watermark. No licensing.')
-st.text('Unlimited usage at $0.79/minute. Voice cloning included. (5 minute maximum for Beta)')
+st.text('Unlimited dubbing at $0.79/minute for all languages. Voice cloning included.')
+st.text('Unlimited subtitling at $0.06/minute for all languages.')
 
 video_url = st.text_input('Paste YouTube link, video url, or note ID from the Nostr:')
 uploaded_file = st.file_uploader("Upload a file:", type=["mp4","mov","mp3","wav"])
-# voice = st.selectbox('Voice:', ['None','Speaker','Bella','Josh'])
-voice = 'Speaker'
-speech = st.selectbox('Language:', [key for key in languages])
-language = languages[speech]
-# cc = st.toggle('Subtitles') #TODO: work on subtitles
-cc = False
+
 col1, col2 = st.columns(2)
 with col1:
     clip_start = int(st.number_input('Clip Start (optional)', min_value=0, step=1))
+    voice = st.selectbox('Voice:', ['None','Clone','Bella','Josh'])
+    # voice = 'Speaker'
+    if voice != 'None':
+        speech = st.selectbox('Voice Language:', [key for key in languages])
+        language = languages[speech]
+    else:
+        language = None
 with col2:
     clip_end = int(st.number_input('Clip End (optional)',min_value=0, step=1))
+    cc = st.toggle('Subtitles') #TODO: work on subtitles
+    # cc = False
+    if cc == True:
+        subselection = st.selectbox('Subtitle Language:', [key for key in languages])
+        cclanguage = languages[subselection]
+    else:
+        cclanguage = None
+
 promo = st.text_input('Enter Promo Code (optional):')
 
 # Voice & Subtitle logic path
@@ -68,7 +78,8 @@ if voice != 'None' or cc:
             visitorid = uuid.uuid1().hex
             print('User: ', visitorid)
             # filepath = os.getcwd() + '/files/'
-            filepath = os.getcwd() + f'/files/{visitorid}/'
+            # filepath = os.getcwd() + f'/files/{visitorid}/'
+            filepath = f'files/{visitorid}/'
             if os.path.exists(filepath):
                 pass
             else:
@@ -158,10 +169,18 @@ if voice != 'None' or cc:
             # $0.30/1,000 characters Elevenlabs (AI Voiceover) (+$22/month)
             # $0.023/GB Amazon S3
             # $0.010/hour Heroku
-
-            cost = 0.43 # $/MIN
-            margin = 0.36 # $/MIN
-            price = round((cost+margin)*duration/60,2)
+            if cc and voice == 'None':
+                cost = 0.005+0.025 # $/MIN Deepgram + DeepL
+                margin = 0.03 # $/MIN
+                price = round((cost+margin)*duration/60,2)
+            # if cc and voice == 'None' and cclanguage == 'EN-US':
+            #     cost = 0.005 # $/MIN Deepgram
+            #     margin = 0.005 # $/MIN
+            #     price = round((cost+margin)*duration/60,2)
+            else:
+                cost = 0.43 # $/MIN Moises + Deepgram + DeepL + Elevenlabs
+                margin = 0.36 # $/MIN
+                price = round((cost+margin)*duration/60,2)
 
             # Route for Lightning Address Generation and Conversion Rate
             quote = lightning_quote(price, 'Jargonspeak!🔥')
@@ -195,7 +214,8 @@ if voice != 'None' or cc:
                     placeholder2.empty()
                     placeholder3.empty()
                     placeholder4.empty()
-                    placeholder5.error('Invoice expired, try again. :(')
+                    raise Exception('Invoice expired, try again. :(')
+                    # placeholder5.error('Invoice expired, try again. :(')
                 elif inv_status == 'PAID' or promo.lower() == 'superspecialcode':
                     placeholder1.empty()
                     placeholder2.empty()
@@ -216,7 +236,7 @@ if voice != 'None' or cc:
                     split(video, filepath+'cropped.mp4', clip_start, clip_end)
                     filename = 'cropped.mp4'
                     video = filepath+filename
-                response = translatevideo(video, voice=voice, captions=cc, filepath=filepath, filename=filename, language=language)
+                response = translatevideo(video, voice=voice, captions=cc, filepath=filepath, filename=filename, language=language, cclanguage=cclanguage)
             elif 'mp3' in filename or 'wav' in filename:
                 if clip_end != 0:
                     print(video, type(video))

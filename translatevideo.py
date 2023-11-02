@@ -10,26 +10,37 @@ import os
 import glob
 import time
 
-def translatevideo(video, voice='Bella', captions=False, filepath='files/', filename= 'video.mp4', language='en'):
+def translatevideo(video, voice='Bella', captions=False, filepath='files/', filename= 'video.mp4', language='EN-US', cclanguage=None):
 	totalstart = time.time()
 	start = time.time()
+
+	if os.path.exists(filepath):
+		pass
+	else:
+		os.makedirs(filepath)
+
 	# STEP #0: Split audio into background & vocals______________________________________________________________________
 	# Separate Audio
-	extractedaudio = filepath+'extractedaudio.mp3'
-	vocalspath = filepath+'vocals.wav'
-	backgroundpath = filepath+'background.wav'
-	extract_audio(video, extractedaudio)
-	vocals, background = splitaudio(extractedaudio)
-	downloadvideo(vocals, vocalspath)
-	downloadvideo(background, backgroundpath)
+	if captions and voice == 'None':
+		pass
+	else:
+		extractedaudio = filepath+'extractedaudio.mp3'
+		vocalspath = filepath+'vocals.wav'
+		backgroundpath = filepath+'background.wav'
+		extract_audio(video, extractedaudio)
+		vocals, background = splitaudio(extractedaudio)
+		downloadvideo(vocals, vocalspath)
+		downloadvideo(background, backgroundpath)
 	end = time.time()
 	splitaudiotime = end-start
 
 	# STEP #1: Take vocals and transcribe to timed text translation______________________________________________________
 	# Transcribe video to text
 	start = time.time()
-	# text = localtranscription(vocalspath, 'en') # English is the most reliable for timing (see next Step for translation)
-	text = getDeepgramTranscription(vocals)
+	if captions and voice == 'None':
+		text = localtranscription(video, 'en') # English is the most reliable for timing (see next Step for translation)
+	else:
+		text = getDeepgramTranscription(vocals)
 	print(text)
 	# TODO: split speakers into timed list/dictionary to individually train for each voice in media
 	# Open the file in write mode and save 'text' to it
@@ -46,6 +57,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	sentences = []
 	transcripts = []
 	texts = []
+	cctexts = []
 	starts = []
 	ends = []
 	i = 0
@@ -78,7 +90,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# STEP #1.5: Translate transcription with a separate API for greater accuracy________________________________________
 	# This step helps with word timing since Deepgram translations can be timed inconsistently
 	start = time.time()
-	if language != 'EN-US':
+	if language != 'EN-US' and language != None:
 		for transcript in transcripts:
 			print(transcript)
 			text = texttranslate(transcript, language)
@@ -86,16 +98,36 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 			texts.append(text)
 		print('Transcripts: ', transcripts)
 		print('Texts: ', texts)
+	elif language == None and captions:
+		pass
 	else:
 		texts = transcripts
+
 	end = time.time()
 	translatetime = end-start
 
 	# STEP #2: Create sub-title file (if requested)______________________________________________________________________
 	start = time.time()
 	if captions:
+		# Separate subtitle translation if caption language differ from voice
+		if cclanguage != 'EN-US' and cclanguage != language:
+			for transcript in transcripts:
+				print(transcript)
+				cctext = texttranslate(transcript, cclanguage)
+				print(cctext)
+				cctexts.append(cctext)
+		elif cclanguage == language:
+			cctexts = texts
+		elif cclanguage == 'EN-US':
+			cctexts = transcripts
+		elif cclanguage == None:
+			pass
+		else:
+			raise Exception('tf?')
+		
 		# Create word-level subtitle file
-		subtitles = convert_to_srt(subtitle_data, path=filepath) #TODO: make sure this works with new API
+		subtitles = convert_to_srtez(cctexts,starts,ends, path=filepath)
+		# subtitles = convert_to_srt(subtitle_data, path=filepath) #TODO: make sure this works with new API
 		# print('Subtitles created')
 	else:
 		subtitles = None
@@ -113,8 +145,8 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 			print('New audio requested')
 
 			# Use speaker voice if elected (always True currently)
-			if voice == 'Speaker': # TODO: need to figure out how to train for multiple speakers
-				voice = json.loads(addvoice(vocalspath, 'Speaker'))
+			if voice == 'Clone': # TODO: need to figure out how to train for multiple speakers
+				voice = json.loads(addvoice(vocalspath, 'Clone'))
 				print('Voice:', voice)
 
 				# Filesize error prevention
@@ -145,7 +177,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 					target_duration *= 0.90 # Keep reducing by 10% until error subsides
 					
 					# Retrieve result
-					voice = json.loads(addvoice(learningpath, 'Speaker'))
+					voice = json.loads(addvoice(learningpath, 'Clone'))
 					print('Voice: ', voice)
 
 					# Successful path (otherwise forever looping until filesize accepted)
@@ -213,7 +245,10 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# STEP #4: Combine AI vocals with background and add to video_______________________________________________________	
 	# Combine background with AI voice:
 	start = time.time()
-	overlay_audio(backgroundpath, new_audio, new_audio)
+	if captions and voice == 'None':
+		pass
+	else:
+		overlay_audio(backgroundpath, new_audio, new_audio)
 
 	# Add final audio to video file
 	output_video = filepath+'jargonspeak_'+filename
@@ -352,8 +387,8 @@ def translateaudio(audio, voice='Bella', filepath='files/', filename= 'video.mp4
 			# extract_audio(filepath+filename, audio_filename=filepath+'videovoice.wav')
 
 			# Use speaker voice if elected (always True currently)
-			if voice == 'Speaker': # TODO: need to figure out how to train for multiple speakers
-				voice = json.loads(addvoice(vocalspath, 'Speaker'))
+			if voice == 'Clone': # TODO: need to figure out how to train for multiple speakers
+				voice = json.loads(addvoice(vocalspath, 'Clone'))
 				print('Voice:', voice)
 
 				# Filesize error prevention
@@ -384,7 +419,7 @@ def translateaudio(audio, voice='Bella', filepath='files/', filename= 'video.mp4
 					target_duration *= 0.90 # Keep reducing by 10% until error subsides
 					
 					# Retrieve result
-					voice = json.loads(addvoice(learningpath, 'Speaker'))
+					voice = json.loads(addvoice(learningpath, 'Clone'))
 					print('Voice: ', voice)
 
 					# Successful path (otherwise forever looping until filesize accepted)
@@ -492,8 +527,8 @@ if __name__ == '__main__':
 	# mp4_files = glob.glob(os.path.join(filepath, "*.mp4"))
 	# for file in mp4_files:
 	# 	filename = os.path.basename(file)
-	# 	translatevideo(file, voice='Speaker', captions=False, filepath=filepath, filename=filename, language='EN-US')
+	# 	translatevideo(file, voice='Clone', captions=False, filepath=filepath, filename=filename, language='EN-US')
 
 	# Test playground
 	audio = r'C:\Users\clayt\Documents\Programming\jargonspeak\audioslice.mp3'
-	translateaudio(audio, voice='Speaker', filepath='files/bitcoin_audible/', filename= 'sample.mp3', language='es')
+	translateaudio(audio, voice='Clone', filepath='files/bitcoin_audible/', filename= 'sample.mp3', language='es')
