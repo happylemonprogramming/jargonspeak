@@ -269,6 +269,4 @@ if voice != 'None' or cc:
         new_text = text['results']['channels'][0]['alternatives'][0]['transcript']
         from levenshteinalgorithm import calculate_similarity
         similarity = calculate_similarity(original_text, new_text)
-        print(original_text)
-        print(new_text)
         print(f'{similarity:.2f}% Accurate to Transcription')
