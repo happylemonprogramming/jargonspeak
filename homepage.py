@@ -4,7 +4,8 @@
 import streamlit as st
 import os
 import time
-from translatevideo import translatevideo, translateaudio
+from translatevideo import translatevideo
+from translateaudio import translateaudio
 from videofunctions import split, detectvideo
 from audiofunctions import audioslicing
 from lightningpay import *

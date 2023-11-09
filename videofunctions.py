@@ -72,8 +72,8 @@ def detectvideo(video, max_length, filepath, filename):
 		max_retries = 100
 		# Adding retry attempts because 503 and 403 exceptions occur randomly
 		while retries < max_retries:
-			try:
-				file = YouTube(video)
+			# try:
+				file = YouTube(video) # use_oauth=True, allow_oauth_cache=True
 				duration = file.length
 				stream = file.streams.filter(progressive=True).order_by('resolution').last() # first lowest, last highest
 				if duration < max_length:
@@ -84,9 +84,9 @@ def detectvideo(video, max_length, filepath, filename):
 					break
 				else:
 					raise Exception(f'Video length exceeds {max_length}s')
-			except:
-				print(f'HTTP 503: Retrying ({retries + 1}/{max_retries})...')
-				retries += 1
+			# except: # TODO: if the exception is age restriction, then this is useless
+			# 	print(f'HTTP 503: Retrying ({retries + 1}/{max_retries})...')
+			# 	retries += 1
 
     # Audio files
 	elif 'mp3' in video or 'wav' in video:
