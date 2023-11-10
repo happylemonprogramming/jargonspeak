@@ -310,7 +310,8 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 # STEP #5: Cloud storage of video file______________________________________________________________________________
 	# TODO: need to figure out permissions and link expiration; may be needed if filesize is too large to download
 	start = time.time()
-	jargonlink = serverlink(output_video, 'jargonspeak_'+filename)
+	mp4link = serverlink(output_video, 'jargonspeak_'+filename)
+	srtlink = serverlink(filepath+'subtitles.srt', 'jargonspeak_'+'subtitles.srt')
 	# jargonlink = None
 	end = time.time()
 	cloudtime = end-start
@@ -337,7 +338,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	totaltime = totalend-totalstart
 	timedictionary = {'splitaudiotime': f'{splitaudiotime}s', 'transcribetime': f'{transcribetime}s', 'translatetime': f'{translatetime}s', 'captiontime': f'{captiontime}s', 'aivoicetime': f'{aivoicetime}s', 'videocompiletime': f'{videocompiletime}s', 'cloudtime': f'{cloudtime}s', 'cleanuptime': f'{cleanuptime}s', 'totaltime': f"{totaltime}s"}
 	print(timedictionary)
-	return output_video, raw_text, jargonlink
+	return output_video, raw_text, mp4link, srtlink
 
 
 if __name__ == '__main__':

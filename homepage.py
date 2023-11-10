@@ -274,7 +274,8 @@ if voice != 'None' or cc:
             st.video(filepath+'jargonspeak_'+filename)
         elif 'mp3' in filename or 'wav' in filename:
             st.audio(filepath+'jargonspeak_'+filename)
-        st.link_button(label='Download', url=response[2]) # AWS Download
+        st.link_button(label='Download .mp4', url=response[2]) # Video Download from AWS
+        st.link_button(label='Download .srt', url=response[3]) # Subtitle Download from AWS
         # with open(filepath+'jargonspeak_'+filename, 'rb') as file: # Memory Download
         #     # Read the binary data from the file
         #     binary = file.read()
