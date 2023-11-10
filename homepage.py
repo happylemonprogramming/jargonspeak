@@ -39,33 +39,55 @@ languages = {
 
 # Front Page
 st.title("Jargonspeak (Alpha)")
-st.text('Fully automated AI media dubbing, translation, and captioning in 20 languages.')
-st.text('No sign up information. No watermark. No licensing.')
-st.text('Unlimited dubbing at $0.79/minute for all languages. Voice cloning included.')
-st.text('Unlimited subtitling at $0.06/minute for all languages.')
+st.text('''
+        Dubbing and translation in 20 languages.
+        No sign up information. No licensing.
+        Unlimited captions at $0.06/minute.
+        Unlimited dubbing at $0.79/minute.
+        ''')
+
+# st.text('Unlimited dubbing at $0.79/minute for all languages. Voice cloning included.')
+# st.text('Unlimited subtitling at $0.06/minute for all languages.')
 
 video_url = st.text_input('Paste YouTube link, video url, or note ID from the Nostr:')
 uploaded_file = st.file_uploader("Upload a file:", type=["mp4","mov","mp3","wav"])
 
-col1, col2 = st.columns(2)
-with col1:
-    clip_start = int(st.number_input('Clip Start (optional)', min_value=0, step=1))
-    voice = st.selectbox('Voice:', ['None','Clone','Bella','Josh'])
-    # voice = 'Speaker'
-    if voice != 'None':
-        speech = st.selectbox('Voice Language:', [key for key in languages])
-        language = languages[speech]
-    else:
-        language = None
-with col2:
-    clip_end = int(st.number_input('Clip End (optional)',min_value=0, step=1))
-    cc = st.toggle('Subtitles') #TODO: work on subtitles
-    # cc = False
-    if cc == True:
-        subselection = st.selectbox('Subtitle Language:', [key for key in languages])
-        cclanguage = languages[subselection]
-    else:
-        cclanguage = None
+# col1, col2 = st.columns(2)
+# with col1:
+#     clip_start = int(st.number_input('Clip Start (optional)', min_value=0, step=1))
+#     voice = st.selectbox('Voice:', ['None','Clone','Bella','Josh'])
+#     # voice = 'Speaker'
+#     if voice != 'None':
+#         speech = st.selectbox('Voice Language:', [key for key in languages])
+#         language = languages[speech]
+#     else:
+#         language = None
+# with col2:
+#     clip_end = int(st.number_input('Clip End (optional)',min_value=0, step=1))
+#     cc = st.toggle('Subtitles')
+#     # cc = False
+#     if cc == True:
+#         subselection = st.selectbox('Subtitle Language:', [key for key in languages])
+#         cclanguage = languages[subselection]
+#     else:
+#         cclanguage = None
+
+clip_start = int(st.number_input('Clip Start (optional)', min_value=0, step=1))
+clip_end = int(st.number_input('Clip End (optional)',min_value=0, step=1))
+voice = st.selectbox('Voice:', ['None','Clone','Bella','Josh'])
+# voice = 'Speaker'
+if voice != 'None':
+    speech = st.selectbox('Voice Language:', [key for key in languages])
+    language = languages[speech]
+else:
+    language = None
+cc = st.toggle('Subtitles')
+# cc = False
+if cc == True:
+    subselection = st.selectbox('Subtitle Language:', [key for key in languages])
+    cclanguage = languages[subselection]
+else:
+    cclanguage = None
 
 promo = st.text_input('Enter Promo Code (optional):')
 
@@ -136,30 +158,26 @@ if voice != 'None' or cc:
 
 
             filetype = video[-4:]
-            print(filetype)
             if filetype.lower() == '.mp3':
                 filename = 'original.mp3'
             if filetype.lower() == '.mp4' or 'youtube' in video:
                 filename = 'original.mp4'
-            print(filename)
+
             if os.path.exists(filepath):
                 pass
             else:
                 os.makedirs(filepath)
 
             # Get duration & download if less than max length
-            print(clip_end, type(clip_end))
+            max_length = 3600 #hard limit of 1-hour for now
             if clip_end != 0:
-                max_length = 3600 #hard limit of 1-hour for now
                 duration = clip_end-clip_start
                 if duration < 0:
                     raise Exception('Start time cannot be after end time.')
-                print(duration, type(duration))
                 detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
             elif (clip_end-clip_start) < 0:
                 raise Exception('Start time cannot be after end time.')
             else:
-                max_length = 300
                 duration = detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
             video = filepath+filename
 
@@ -233,14 +251,14 @@ if voice != 'None' or cc:
             filename = filename.strip().replace(' ','')
             if 'mp4' in filename or 'mov' in filename:
                 if clip_end != 0:
-                    print(video, type(video))
+                    print('Media path: ', video)
                     split(video, filepath+'cropped.mp4', clip_start, clip_end)
                     filename = 'cropped.mp4'
                     video = filepath+filename
                 response = translatevideo(video, voice=voice, captions=cc, filepath=filepath, filename=filename, language=language, cclanguage=cclanguage)
             elif 'mp3' in filename or 'wav' in filename:
                 if clip_end != 0:
-                    print(video, type(video))
+                    print('Media path: ', video)
                     audioslicing(video, clip_start, clip_end, filepath+'cropped.mp3')
                     filename = 'cropped.mp3'
                     video = filepath+filename

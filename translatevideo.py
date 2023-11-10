@@ -89,6 +89,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	wordstarts = []
 	wordends = []
 	cctexts = []
+	texts = []
 
 	# TODO: may need to have sentence timing because some words can persist on screen too long
 	# prefer to have sentences timing, but then ensure it's on the character limit

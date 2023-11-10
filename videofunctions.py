@@ -55,7 +55,6 @@ def youtubedownload(video, path):
 	
 
 def detectvideo(video, max_length, filepath, filename):
-	print(video)
 	# # Local file
 	# if 'http' not in video:
 	# 	# Get the duration of the video in seconds.
@@ -67,7 +66,7 @@ def detectvideo(video, max_length, filepath, filename):
 
     # Youtube
 	if 'youtube' in video or 'youtu.be' in video:
-		print('YouTube video detected')
+		print('YouTube video detected: ', video)
 		retries = 0
 		max_retries = 100
 		# Adding retry attempts because 503 and 403 exceptions occur randomly
