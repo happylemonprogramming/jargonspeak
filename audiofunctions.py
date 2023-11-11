@@ -97,6 +97,15 @@ def audiocombine(path1,path2):
     concatenated_clip.write_audiofile(output)
     return output
 
+# import base64
+
+# # Read the font file as binary
+# with open('fonts/YuGothR.ttc', 'rb') as font_file:
+#     font_data = font_file.read()
+
+# # Encode the font file as base64
+# encoded_font = base64.b64encode(font_data).decode('utf-8')
+
 def add_new_audio(input_video, new_audio=None, subtitles=None, output_video='output.mp4'):
     start = time.time()
     if subtitles == None and new_audio != None:
@@ -115,8 +124,9 @@ def add_new_audio(input_video, new_audio=None, subtitles=None, output_video='out
             'ffmpeg',
             '-i', input_video,
             # '-i', new_audio,
-            # '-vf', f"subtitles={subtitles}", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
-            '-vf', f"subtitles={subtitles}:force_style='Fontname=DejaVuSans,Fontsize=24'",
+            '-vf', f"subtitles={subtitles}", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
+            # '-vf', f"subtitles={subtitles}:force_style='FontName=DejaVu Serif,Fontsize=24'",
+            # '-vf', f"subtitles=subtitle_file.srt:force_style='FontName=data:font/truetype;charset=utf-8;base64,{encoded_font},FontSize=24'",
             '-c:v', 'libx264', '-preset', 'fast', '-crf', '18',
             '-c:a', 'aac', '-b:a', '192k',  # You can adjust the audio codec and bitrate as needed
             # '-map', '0:v', '-map', '1:a',
@@ -128,8 +138,9 @@ def add_new_audio(input_video, new_audio=None, subtitles=None, output_video='out
             'ffmpeg',
             '-i', input_video,
             '-i', new_audio,
-            # '-vf', f"subtitles={subtitles}", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
-            '-vf', f"subtitles={subtitles}:force_style='Fontname=DejaVuSans,Fontsize=24'",
+            '-vf', f"subtitles={subtitles}", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
+            # '-vf', f"subtitles={subtitles}:force_style='FontName=DejaVu Serif,Fontsize=24'",
+            # '-vf', f"subtitles=subtitle_file.srt:force_style='FontName=data:font/truetype;charset=utf-8;base64,{encoded_font},FontSize=24'",
             '-c:v', 'libx264', '-preset', 'fast', '-crf', '18',
             '-c:a', 'aac', '-b:a', '192k',  # You can adjust the audio codec and bitrate as needed
             '-map', '0:v', '-map', '1:a',
