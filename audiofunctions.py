@@ -115,7 +115,8 @@ def add_new_audio(input_video, new_audio=None, subtitles=None, output_video='out
             'ffmpeg',
             '-i', input_video,
             # '-i', new_audio,
-            '-vf', f"subtitles={subtitles}", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
+            # '-vf', f"subtitles={subtitles}", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
+            '-vf', f"subtitles={subtitles}:force_style='Fontname=DejaVuSans,Fontsize=24'"
             '-c:v', 'libx264', '-preset', 'fast', '-crf', '18',
             '-c:a', 'aac', '-b:a', '192k',  # You can adjust the audio codec and bitrate as needed
             # '-map', '0:v', '-map', '1:a',
@@ -127,7 +128,8 @@ def add_new_audio(input_video, new_audio=None, subtitles=None, output_video='out
             'ffmpeg',
             '-i', input_video,
             '-i', new_audio,
-            '-vf', f"subtitles={subtitles}", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
+            # '-vf', f"subtitles={subtitles}", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
+            '-vf', f"subtitles={subtitles}:force_style='Fontname=DejaVuSans,Fontsize=24'"
             '-c:v', 'libx264', '-preset', 'fast', '-crf', '18',
             '-c:a', 'aac', '-b:a', '192k',  # You can adjust the audio codec and bitrate as needed
             '-map', '0:v', '-map', '1:a',
