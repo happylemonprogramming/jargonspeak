@@ -1,6 +1,7 @@
 import subprocess
 import time
 import subprocess
+import yt_dlp
 from pytube import YouTube
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.editor import AudioFileClip
@@ -53,6 +54,29 @@ def youtubedownload(video, path):
 	print(stream)
 	stream.download(filename=path)
 	
+def ytdownload(video_url, output):
+    options = {
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': output,
+    }
+
+    with yt_dlp.YoutubeDL(options) as ydl:
+        ydl.download([video_url])
+        info_dict = ydl.extract_info(video_url, download=False)
+        video_length = info_dict.get('duration', 0)
+
+    return video_length
+
+def ytvideolength(video_url):
+    options = {
+        'quiet': True,  # Suppress console output
+    }
+
+    with yt_dlp.YoutubeDL(options) as ydl:
+        info_dict = ydl.extract_info(video_url, download=False)
+        video_length = info_dict.get('duration', 0)
+
+    return video_length
 
 def detectvideo(video, max_length, filepath, filename):
 	# # Local file
@@ -67,25 +91,34 @@ def detectvideo(video, max_length, filepath, filename):
     # Youtube
 	if 'youtube' in video or 'youtu.be' in video:
 		print('YouTube video detected: ', video)
-		retries = 0
-		max_retries = 100
-		# Adding retry attempts because 503 and 403 exceptions occur randomly
-		while retries < max_retries:
-			# try:
-				file = YouTube(video) # use_oauth=True, allow_oauth_cache=True
-				duration = file.length
-				stream = file.streams.filter(progressive=True).order_by('resolution').last() # first lowest, last highest
-				if duration < max_length:
-					video = filepath+filename.strip()
-					# print(filename)
-					stream.download(filename=video)
-					print('Video saved locally')
-					break
-				else:
-					raise Exception(f'Video length exceeds {max_length}s')
-			# except: # TODO: if the exception is age restriction, then this is useless
-			# 	print(f'HTTP 503: Retrying ({retries + 1}/{max_retries})...')
-			# 	retries += 1
+
+		# yt-dlp method (no age restriction, seemingly more reliable)
+		duration = ytvideolength(video)
+		if duration < max_length: 
+			output = filepath+filename.strip()
+			ytdownload(video, output)
+			print('Video saved locally')
+
+		# Pytube method
+		# retries = 0
+		# max_retries = 100
+		# # Adding retry attempts because 503 and 403 exceptions occur randomly
+		# while retries < max_retries:
+		# 	# try:
+		# 		file = YouTube(video) # use_oauth=True, allow_oauth_cache=True
+		# 		duration = file.length
+		# 		stream = file.streams.filter(progressive=True).order_by('resolution').last() # first lowest, last highest
+		# 		if duration < max_length:
+		# 			video = filepath+filename.strip()
+		# 			# print(filename)
+		# 			stream.download(filename=video)
+		# 			print('Video saved locally')
+		# 			break
+		# 		else:
+		# 			raise Exception(f'Video length exceeds {max_length}s')
+		# 	# except: # TODO: if the exception is age restriction, then this is useless
+		# 	# 	print(f'HTTP 503: Retrying ({retries + 1}/{max_retries})...')
+		# 	# 	retries += 1
 
     # Audio files
 	elif 'mp3' in video or 'wav' in video:
@@ -123,5 +156,8 @@ if __name__ == '__main__':
 	# downloadvideo(url,'howtobuybitcoin.mp3')
 	# duration = VideoFileClip('https://video.nostr.build/401b8475dc5aa523b2edc7fbeb462f09f168aac8f268a598ac3556aca279c7fa.mp4').duration
 	# print(duration)
-	path = r'C:\Users\clayt\Documents\Programming\jargonspeak/files/f9ec6de472ec11eeba4418ff0f367121/'
-	split(path+'original.mp4',path+'crop.mp4',822,905)
+	# path = r'C:\Users\clayt\Documents\Programming\jargonspeak/files/f9ec6de472ec11eeba4418ff0f367121/'
+	# split(path+'original.mp4',path+'crop.mp4',822,905)
+	url = 'https://www.youtube.com/watch?v=Hd31dbJvGaU'
+	length = ytdownload(url, 'natebargatze2.mp4')
+	print(f'Video Length : {length}s')

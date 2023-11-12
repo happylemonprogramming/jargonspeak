@@ -60,77 +60,77 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	words = text['results']['channels'][0]['alternatives'][0]['words']
 	paragraphs = text['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
 	
-	# # intialize lists
-	# sentences = []
-	# transcripts = []
-	# texts = []
-	# cctexts = []
-	# starts = []
-	# ends = []
-	# i = 0
+	# intialize lists
+	sentences = []
+	transcripts = []
+	texts = []
+	cctexts = []
+	starts = []
+	ends = []
+	i = 0
 
-	# # Sentence Level
-	# # gather all paragraphs into unified list
-	# for paragraph in paragraphs:
-	# 	sentences.append(paragraph['sentences'])
+	# Sentence Level
+	# gather all paragraphs into unified list
+	for paragraph in paragraphs:
+		sentences.append(paragraph['sentences'])
 
-	# # create text list, start list and end list
-	# for sentence in sentences:
-	# 	for group in sentence:
-	# 		transcripts.append(group['text'])
-	# 		starts.append(group['start'])
-	# 		ends.append(group['end'])
+	# create text list, start list and end list
+	for sentence in sentences:
+		for group in sentence:
+			transcripts.append(group['text'])
+			starts.append(group['start'])
+			ends.append(group['end'])
 
 	
-	# # Word Level [Tonality between words is too different and doesn't flow well at all]
-	# TODO: create character limit for subtitles so it doesn't run offscreen
-	# # gather all paragraphs into unified list
-	wordtexts = []
-	wordstarts = []
-	wordends = []
-	cctexts = []
-	texts = []
+	# # # Word Level [Tonality between words is too different and doesn't flow well at all]
+	# # TODO: create character limit for subtitles so it doesn't run offscreen
+	# # # gather all paragraphs into unified list
+	# wordtexts = []
+	# wordstarts = []
+	# wordends = []
+	# cctexts = []
+	# texts = []
 
-	# TODO: may need to have sentence timing because some words can persist on screen too long
-	# prefer to have sentences timing, but then ensure it's on the character limit
-	for word in words:
-		wordtexts.append(word['punctuated_word'])
-		wordstarts.append(word['start'])
-		wordends.append(word['end'])
+	# # TODO: may need to have sentence timing because some words can persist on screen too long
+	# # prefer to have sentences timing, but then ensure it's on the character limit
+	# for word in words:
+	# 	wordtexts.append(word['punctuated_word'])
+	# 	wordstarts.append(word['start'])
+	# 	wordends.append(word['end'])
 
-	# Initialization and limit definition
-	character_length = 50
-	i = 0
-	captionburn = ''
-	captionburnlist = []
-	startburnlist = [wordstarts[0]]
-	endburnlist = []
+	# # Initialization and limit definition
+	# character_length = 50
+	# i = 0
+	# captionburn = ''
+	# captionburnlist = []
+	# startburnlist = [wordstarts[0]]
+	# endburnlist = []
 
-	# TODO: figure out how to limit characters for translated language
-	while i<len(wordtexts): # Run until program has incremented through all words
-		captionburn = captionburn + str(wordtexts[i]) + ' ' + str(wordtexts[i+1]) + ' '
-		i+=2
-		if len(captionburn)>character_length: # Subtitle length limit
-			captionburnlist.append(captionburn[:-1]) # Add to subtitles list for voicing
-			try:
-				endburnlist.append(wordends[i-1])
-				startburnlist.append(wordstarts[i])
-			except:
-				print(captionburnlist, len(captionburnlist))
-				print(startburnlist,len(startburnlist))
-				print(endburnlist,len(endburnlist))
-			captionburn = '' # Reset captionburn variable for next phrase in list
-		if i+1 >= len(wordtexts): # Break condition when all words are captured
-			if wordtexts[-1] != wordtexts[i-1]: # Add stragler
-				captionburnlist.append(captionburn+str(wordtexts[-1]))
-			else:
-				captionburnlist.append(captionburn[:-1])
-			endburnlist.append(wordends[-1])
-			break
+	# # TODO: figure out how to limit characters for translated language
+	# while i<len(wordtexts): # Run until program has incremented through all words
+	# 	captionburn = captionburn + str(wordtexts[i]) + ' ' + str(wordtexts[i+1]) + ' '
+	# 	i+=2
+	# 	if len(captionburn)>character_length: # Subtitle length limit
+	# 		captionburnlist.append(captionburn[:-1]) # Add to subtitles list for voicing
+	# 		try:
+	# 			endburnlist.append(wordends[i-1])
+	# 			startburnlist.append(wordstarts[i])
+	# 		except:
+	# 			print(captionburnlist, len(captionburnlist))
+	# 			print(startburnlist,len(startburnlist))
+	# 			print(endburnlist,len(endburnlist))
+	# 		captionburn = '' # Reset captionburn variable for next phrase in list
+	# 	if i+1 >= len(wordtexts): # Break condition when all words are captured
+	# 		if wordtexts[-1] != wordtexts[i-1]: # Add stragler
+	# 			captionburnlist.append(captionburn+str(wordtexts[-1]))
+	# 		else:
+	# 			captionburnlist.append(captionburn[:-1])
+	# 		endburnlist.append(wordends[-1])
+	# 		break
 
-	transcripts = captionburnlist
-	starts = startburnlist
-	ends = endburnlist
+	# transcripts = captionburnlist
+	# starts = startburnlist
+	# ends = endburnlist
 
 	end = time.time()
 	transcribetime = end-start
