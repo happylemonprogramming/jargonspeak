@@ -77,7 +77,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# create text list, start list and end list
 	for sentence in sentences:
 		for group in sentence:
-			transcripts.append(group['text'])
+			transcripts.append(group['text']) #no idea if this is going to work or not
 			starts.append(group['start'])
 			ends.append(group['end'])
 
@@ -162,6 +162,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 			for transcript in transcripts:
 				print(transcript)
 				cctext = texttranslate(transcript, cclanguage)
+				cctext = linebreak(cctext)
 				print(cctext)
 				cctexts.append(cctext)
 		elif cclanguage == language:
@@ -175,6 +176,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 		
 		# Create word-level subtitle file
 		subtitles = convert_to_srtez(cctexts,starts,ends, path=filepath)
+		subtitles = convert_that_ass(subtitles,filepath)
 		# subtitles = convert_to_srt(subtitle_data, path=filepath) #TODO: make sure this works with new API
 		# print('Subtitles created')
 	else:

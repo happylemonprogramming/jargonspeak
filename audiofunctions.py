@@ -124,7 +124,9 @@ def add_new_audio(input_video, new_audio=None, subtitles=None, output_video='out
             'ffmpeg',
             '-i', input_video,
             # '-i', new_audio,
-            '-vf', f"subtitles={subtitles}:force_style=WrapStyle=0:ForceEffect=1", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
+            # '-filter_complex',
+            '-vf', 
+            f"subtitles={subtitles}:force_style='Fontsize=12'", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
             # '-vf', f"subtitles={subtitles}:force_style='FontName=DejaVu Serif,Fontsize=24'",
             # '-vf', f"subtitles=subtitle_file.srt:force_style='FontName=data:font/truetype;charset=utf-8;base64,{encoded_font},FontSize=24'",
             '-c:v', 'libx264', '-preset', 'fast', '-crf', '18',
@@ -138,7 +140,9 @@ def add_new_audio(input_video, new_audio=None, subtitles=None, output_video='out
             'ffmpeg',
             '-i', input_video,
             '-i', new_audio,
-            '-vf', f"subtitles={subtitles}:force_style=WrapStyle=0:ForceEffect=1", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
+            # '-filter_complex',
+            '-vf', 
+            f"subtitles={subtitles}:force_style='Fontsize=12'", # :force_style='FontName=fonts/NotoSansJP-Regular.ttf'
             # '-vf', f"subtitles={subtitles}:force_style='FontName=DejaVu Serif,Fontsize=24'",
             # '-vf', f"subtitles=subtitle_file.srt:force_style='FontName=data:font/truetype;charset=utf-8;base64,{encoded_font},FontSize=24'",
             '-c:v', 'libx264', '-preset', 'fast', '-crf', '18',

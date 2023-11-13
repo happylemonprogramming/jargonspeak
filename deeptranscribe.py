@@ -1,6 +1,7 @@
 from deepgram import Deepgram
 import os
 import requests
+import subprocess
 import time
 
 DEEPGRAM_API_KEY = os.environ["deepgramapikey"]
@@ -126,6 +127,37 @@ def format_time(seconds):
     seconds, milliseconds = divmod(remainder, 1)
     return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d},{int(milliseconds*1000):03d}"
 
+def convert_that_ass(subtitle_path, output_path=''):
+    start = time.time()
+    output_filename = output_path + 'subtitles.ass'
+    ffmpeg_cmd = [
+        'ffmpeg',
+        '-i', subtitle_path,
+        output_filename
+    ]
+    subprocess.run(ffmpeg_cmd)
+    print(f"Got that ass! ({round(time.time()-start,2)}s)")
+
+    return output_filename
+
+def linebreak(text):
+    result = ""
+    for i, char in enumerate(text):
+        if char == '，' or char == '、':
+            result += char + '\\N'
+        elif char == '。':
+            # Check if there are other characters after '。'
+            if i < len(text) - 1:
+                next_char = text[i + 1]
+                # Add '\N' only if there are other characters after '。'
+                result += char + '\\N' if next_char != '，' or '、' else char
+            else:
+                result += char
+        else:
+            result += char
+        print('Linebreak:', result)
+    return result
+
 def convert_to_srtez(texts, starts, ends, path=''):
     output_filename = path + 'subtitles.srt'
     
@@ -195,34 +227,36 @@ def convert_to_srt(data, path='', level='sentence'):
     return output_filename
 
 if __name__ == '__main__':
-    # Hyperlink Function
-    # p_url = 'https://db9c2d0e80dc9774067d0f439aa504a7.cdn.bubble.io/f1692677290753x434684319755118660/RPReplay_Final1692675241.MP4'
-    p_url = 'https://s3.amazonaws.com/appforest_uf/f1678940868271x564994871606250500/aistorytelling.py%20-%20Untitled%20%28Workspace%29%20-%20Visual%20Studio%20Code%202023-01-02%2011-12-25.mp4'
-    # # p_url = 'https://www.youtube.com/watch?v=X--l6Qy5Tb0'
-    output = getDeepgramTranscription(p_url)
+    # # Hyperlink Function
+    # # p_url = 'https://db9c2d0e80dc9774067d0f439aa504a7.cdn.bubble.io/f1692677290753x434684319755118660/RPReplay_Final1692675241.MP4'
+    # p_url = 'https://s3.amazonaws.com/appforest_uf/f1678940868271x564994871606250500/aistorytelling.py%20-%20Untitled%20%28Workspace%29%20-%20Visual%20Studio%20Code%202023-01-02%2011-12-25.mp4'
+    # # # p_url = 'https://www.youtube.com/watch?v=X--l6Qy5Tb0'
+    # output = getDeepgramTranscription(p_url)
     
-    # # Local Function
-    # path = r'C:\Users\clayt\Documents\Programming\jargonspeak\fiverrcustomer.mp4'
-    # output = localtranscription(path,languages['English'])
+    # # # Local Function
+    # # path = r'C:\Users\clayt\Documents\Programming\jargonspeak\fiverrcustomer.mp4'
+    # # output = localtranscription(path,languages['English'])
 
-    # # Output Reading
-    print('Output: ', output, type(output))
-    # keys = [key for key in output]
-    # print(keys)
-    # raw_text = output['results']['channels'][0]['alternatives'][0]['transcript']
-    subtitle_data = output['results']['channels'][0]['alternatives'][0]
-    convert_to_srt(subtitle_data)
-    paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs'][0]['sentences']
-    print(paragraphs[0])
-    print(paragraphs[0]['text'])
-    paragraphs[0]['text'] = 'I like big butts'
-    print(paragraphs[0]['text'])
-    # paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
-    # words = output['results']['channels'][0]['alternatives'][0]['words']
-    # print('Raw Text: ', raw_text)
-    # print('Subtitle Data: ', subtitle_data)
-    # print('Paragraphs: ', paragraphs)
-    # print('Words: ', words)
-    with open('subtitledata.txt', 'w', encoding='utf-8') as file:
-        file.write(str(subtitle_data))
-    print('Video transcribed')
+    # # # Output Reading
+    # print('Output: ', output, type(output))
+    # # keys = [key for key in output]
+    # # print(keys)
+    # # raw_text = output['results']['channels'][0]['alternatives'][0]['transcript']
+    # subtitle_data = output['results']['channels'][0]['alternatives'][0]
+    # convert_to_srt(subtitle_data)
+    # paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs'][0]['sentences']
+    # print(paragraphs[0])
+    # print(paragraphs[0]['text'])
+    # paragraphs[0]['text'] = 'I like big butts'
+    # print(paragraphs[0]['text'])
+    # # paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
+    # # words = output['results']['channels'][0]['alternatives'][0]['words']
+    # # print('Raw Text: ', raw_text)
+    # # print('Subtitle Data: ', subtitle_data)
+    # # print('Paragraphs: ', paragraphs)
+    # # print('Words: ', words)
+    # with open('subtitledata.txt', 'w', encoding='utf-8') as file:
+    #     file.write(str(subtitle_data))
+    # print('Video transcribed')
+    path = r'C:\Users\clayt\Documents\Programming\jargonspeak\files\b2239d9d805211eeb61b18ff0f367121\subtitles.srt'
+    convert_that_ass(path)
