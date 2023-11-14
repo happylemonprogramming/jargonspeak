@@ -182,12 +182,12 @@ if voice != 'None' or cc:
             video = filepath+filename
 
         with st.spinner('Pending lightning invoice...'):
-            # $0.10/min Moises (Vocal Background Split)
+            # $0.1000/min Moises (Vocal Background Split)
             # $0.0043/min Deepgram (Transcription)
-            # $0.025/1,000 characters DeepL (Translation) (+$5.49/month)
-            # $0.30/1,000 characters Elevenlabs (AI Voiceover) (+$22/month)
-            # $0.023/GB Amazon S3
-            # $0.010/hour Heroku
+            # $0.0250/1,000 characters DeepL (Translation) (+$5.49/month)
+            # $0.3000/1,000 characters Elevenlabs (AI Voiceover) (+$22/month)
+            # $0.0230/GB Amazon S3
+            # $0.0100/hour Heroku
             if cc and voice == 'None':
                 cost = 0.005+0.025 # $/MIN Deepgram + DeepL
                 margin = 0.03 # $/MIN

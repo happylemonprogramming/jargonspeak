@@ -302,7 +302,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 
 	# Add final audio to video file
 	output_video = filepath+'jargonspeak_'+filename
-	if 'c:' in subtitles.lower():
+	if 'C:' in subtitles:
 		subtitles = subtitles[49:] # issue with '/\' in FFMPEG; also should work on Heroku
 	add_new_audio(filepath+filename, new_audio, subtitles, output_video)
 	# print('New video file creation attempted')
