@@ -233,30 +233,30 @@ if __name__ == '__main__':
     # # # p_url = 'https://www.youtube.com/watch?v=X--l6Qy5Tb0'
     # output = getDeepgramTranscription(p_url)
     
-    # # # Local Function
-    # # path = r'C:\Users\clayt\Documents\Programming\jargonspeak\fiverrcustomer.mp4'
-    # # output = localtranscription(path,languages['English'])
+    # Local Function
+    path = "C:/Users/clayt/Videos/Video Translation/Julie Translations/To Be Translated/RPReplay_Final1695652113.MP4"
+    output = localtranscription(path,languages['English'])
 
-    # # # Output Reading
-    # print('Output: ', output, type(output))
-    # # keys = [key for key in output]
-    # # print(keys)
-    # # raw_text = output['results']['channels'][0]['alternatives'][0]['transcript']
-    # subtitle_data = output['results']['channels'][0]['alternatives'][0]
+    # # Output Reading
+    print('Output: ', output, type(output))
+    # keys = [key for key in output]
+    # print(keys)
+    # raw_text = output['results']['channels'][0]['alternatives'][0]['transcript']
+    subtitle_data = output['results']['channels'][0]['alternatives'][0]
     # convert_to_srt(subtitle_data)
     # paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs'][0]['sentences']
     # print(paragraphs[0])
     # print(paragraphs[0]['text'])
     # paragraphs[0]['text'] = 'I like big butts'
     # print(paragraphs[0]['text'])
-    # # paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
-    # # words = output['results']['channels'][0]['alternatives'][0]['words']
-    # # print('Raw Text: ', raw_text)
-    # # print('Subtitle Data: ', subtitle_data)
-    # # print('Paragraphs: ', paragraphs)
-    # # print('Words: ', words)
-    # with open('subtitledata.txt', 'w', encoding='utf-8') as file:
-    #     file.write(str(subtitle_data))
+    # paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
+    # words = output['results']['channels'][0]['alternatives'][0]['words']
+    # print('Raw Text: ', raw_text)
+    # print('Subtitle Data: ', subtitle_data)
+    # print('Paragraphs: ', paragraphs)
+    # print('Words: ', words)
+    with open('subtitledata.txt', 'w', encoding='utf-8') as file:
+        file.write(str(subtitle_data))
     # print('Video transcribed')
-    path = r'C:\Users\clayt\Documents\Programming\jargonspeak\files\b2239d9d805211eeb61b18ff0f367121\subtitles.srt'
-    convert_that_ass(path)
+    # path = r'C:\Users\clayt\Documents\Programming\jargonspeak\files\b2239d9d805211eeb61b18ff0f367121\subtitles.srt'
+    # convert_that_ass(path)
