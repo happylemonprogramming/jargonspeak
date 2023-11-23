@@ -89,8 +89,8 @@ def textreplace2(noTextImage, outputImage, words, bounds):
 
             # Load a font and set the font size based on the box height
             font_size = int(box_height * 0.8)  # Adjust the factor as needed
-            font = ImageFont.load_default()
-            # font = ImageFont.truetype(".fonts/YuGothR.ttc", font_size)
+            # font = ImageFont.load_default()
+            font = ImageFont.truetype(".fonts/YuGothR.ttc", font_size)
 
             replacement_word = words[i]
 
