@@ -115,13 +115,39 @@ def subscriptioninfo():
 
     return response.json()
 
+def speechtospeech(audio_file_path,voice_id):
+    # ERROR: {"detail":{"status":"voice_not_found",
+    # "message":"A voice for the voice_id mzzyrHBdOjyMhiNl1rT7 was not found."}}
+    # Set the API endpoint URL and replace {voice_id} with the actual voice ID
+    api_url = f"https://api.elevenlabs.io/v1/speech-to-speech/{voice_id}"
+
+    # Make the POST request with the audio file
+    files = {'audio': open(audio_file_path, 'rb')}
+    payload = {"model_id": "eleven_multilingual_v2"}
+    headers = {
+    "Accept": "application/json",
+    "xi-api-key": os.environ.get('elevenlabsapikey')
+    }
+
+    response = requests.post(api_url, files=files, json=payload, headers=headers)
+
+    # Print the response
+    print(response.text)
+
 if __name__ == '__main__':
     # voicepath = r'C:\Users\clayt\Documents\Programming\translait\output\iamyourfather\vocals.wav'
     # vader = addvoice(voicepath,'Vader')
     # print(vader)
     # aispeech(text='Luke, I am your father.',voice='mzzyrHBdOjyMhiNl1rT7',output='vader.wav',text_file=None)
-    addvoice(r'C:\Users\clayt\Documents\Programming\jargonspeak\files\9ba0465e6faf11eebef618ff0f367121\original.mp4', 'jobs')
-
+    # addvoice(r'C:\Users\clayt\Documents\Programming\jargonspeak\files\9ba0465e6faf11eebef618ff0f367121\original.mp4', 'jobs')
+    # audio_file_path = 'files/cf18fe2f8af211eeb2ff18ff0f367121/extractedaudio.mp3'
+    # voice_id = 'uO96UIs3QYEaGBuCRGiS'
+    # from audiofunctions import audioslicing
+    # audioslicing(audio_file_path, 7, 30, output = 'cheatcode.mp3')
+    # voice_id = addvoice(audio_file_path,'jobbyjobs')
+    # import json
+    # voice = json.loads(voice_id)
+    speechtospeech('cheatcode.mp3','mzzyrHBdOjyMhiNl1rT7')
     # {'tier': 'creator', 
     #  'character_count': 67386, 
     #  'character_limit': 100029, 
