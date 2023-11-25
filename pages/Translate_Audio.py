@@ -114,7 +114,7 @@ if click:
             visitorid = uuid.uuid1().hex
             print('User: ', visitorid)
             # filepath = os.getcwd() + '/files/'
-            filepath = os.getcwd() + f'/files/{visitorid}/'
+            filepath = os.getcwd() + f'/files/{visitorid}/' # Doesn't work locally
             # filepath = f'files/{visitorid}/' # Doesn't work on Heroku
             if os.path.exists(filepath):
                 pass

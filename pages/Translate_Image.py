@@ -58,22 +58,32 @@ st.info('''
         Unlimited translations at $0.05/image.
         ''')
 meme_link = st.text_input('Image link or meme url:')
+uploaded_file = st.file_uploader("Upload a file:", type=["jpg","png","heif"])
 target_language = st.selectbox('Language:', [key for key in languages])
 language = languages[target_language]
 click = st.button(':rocket: Launch!')
 if click:
     with st.spinner('Translating...'):
         visitorid = uuid.uuid1().hex
-        # filepath = os.getcwd() + f'/files/{visitorid}/' # Doesn't work locally
-        filepath = f'files/{visitorid}/' # Doesn't work on Heroku
+        filepath = os.getcwd() + f'/files/{visitorid}/' # Doesn't work locally
+        # filepath = f'files/{visitorid}/' # Doesn't work on Heroku
         if os.path.exists(filepath):
             pass
         else:
             os.makedirs(filepath)
             os.makedirs(filepath+'frames')
-        # Inputs
+			
         input_image_path = f'{filepath}local.png'
-        downloadvideo(meme_link,input_image_path) #meme download
+
+        if uploaded_file is not None:
+            file_contents = uploaded_file.read()
+            with open(input_image_path, "wb") as f:
+                f.write(file_contents)
+        else:
+        # Inputs
+            input_image_path = f'{filepath}local.png'
+            downloadvideo(meme_link,input_image_path) #meme download
+
         noTextImage = f'{filepath}notext.png'
 
         # Read the meme and gather text
