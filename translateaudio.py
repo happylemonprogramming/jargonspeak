@@ -98,7 +98,7 @@ def translateaudio(audio, voice='Bella', filepath='files/', filename= 'video.mp4
 
 	# STEP #3: Create AI voice__________________________________________________________________________________________
 	aistart = time.time()
-	if voice != 'None':
+	if voice:
 		info = subscriptioninfo()
 		character_count = info['character_count']
 		character_limit = info['character_limit']

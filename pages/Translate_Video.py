@@ -201,7 +201,7 @@ if click:
             # $0.3000/1,000 characters Elevenlabs (AI Voiceover) (+$22/month)
             # $0.0230/GB Amazon S3
             # $0.0100/hour Heroku
-            if cc and voice == 'None':
+            if cc and voice == False:
                 cost = 0.005+0.025 # $/MIN Deepgram + DeepL
                 margin = 0.03 # $/MIN
                 price = round((cost+margin)*duration/60,2)

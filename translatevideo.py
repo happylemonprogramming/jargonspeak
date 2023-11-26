@@ -21,7 +21,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 
 # STEP #0: Split audio into background & vocals______________________________________________________________________
 	# Separate Audio
-	if captions and voice == 'None':
+	if captions and voice == False:
 		pass # Best way to keep it cheap; can use else function for captions, but adds $0.10/min
 	else:
 		extractedaudio = filepath+'extractedaudio.mp3'
@@ -41,7 +41,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# Transcribe video to text
 	start = time.time()
 	# Subtitles Only
-	if captions and voice == 'None':
+	if captions and voice == False:
 		text = localtranscription(video, 'en') # English is the most reliable for timing (see next Step for translation)
 	# Vocals hyperlink preserved for web transcription
 	else:
@@ -186,7 +186,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 
 # STEP #3: Create AI voice__________________________________________________________________________________________
 	aistart = time.time()
-	if voice != 'None':
+	if voice:
 		info = subscriptioninfo()
 		character_count = info['character_count']
 		character_limit = info['character_limit']
@@ -295,7 +295,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 # STEP #4: Combine AI vocals with background and add to video_______________________________________________________	
 	# Combine background with AI voice:
 	start = time.time()
-	if captions and voice == 'None':
+	if captions and voice == False:
 		pass
 	else:
 		overlay_audio(backgroundpath, new_audio, new_audio)

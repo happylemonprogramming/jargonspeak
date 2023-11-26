@@ -234,7 +234,8 @@ if __name__ == '__main__':
     # output = getDeepgramTranscription(p_url)
     
     # Local Function
-    path = "C:/Users/clayt/Videos/Video Translation/Julie Translations/To Be Translated/RPReplay_Final1695652113.MP4"
+    # path = "C:/Users/clayt/Videos/Video Translation/Julie Translations/To Be Translated/RPReplay_Final1695652113.MP4"
+    path = "C:/Users/clayt/Downloads/jargonspeak_cropped (3).mp4"
     output = localtranscription(path,languages['English'])
 
     # # Output Reading
@@ -249,7 +250,7 @@ if __name__ == '__main__':
     # print(paragraphs[0]['text'])
     # paragraphs[0]['text'] = 'I like big butts'
     # print(paragraphs[0]['text'])
-    # paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
+    paragraphs = output['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
     # words = output['results']['channels'][0]['alternatives'][0]['words']
     # print('Raw Text: ', raw_text)
     # print('Subtitle Data: ', subtitle_data)
