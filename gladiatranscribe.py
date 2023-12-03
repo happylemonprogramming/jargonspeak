@@ -1,9 +1,11 @@
 import requests
+import os
 
+api_key = os.environ['gladiaapikey']
 # Can't do YouTube Shorts
 def urlgladiatranscribe(url,target_language):
     headers = {
-        'x-gladia-key': 'a5c6b331-4276-4279-a374-46aa820e3238',
+        'x-gladia-key': api_key,
     }
 
     files = {
@@ -18,7 +20,7 @@ def urlgladiatranscribe(url,target_language):
 
 def localgladiatranscribe(path, target_language):
     headers = {
-        'x-gladia-key': 'a5c6b331-4276-4279-a374-46aa820e3238',
+        'x-gladia-key': api_key,
     }
 
     files = {
@@ -35,7 +37,7 @@ def localgladiatranscribe(path, target_language):
 if __name__ == '__main__':
     import time
     start = time.time()
-    url = 'https://www.youtube.com/watch?v=6uWd5YgMBNc&ab_channel=Crimsonplex'
+    url = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
     target_language = 'english'
     output = urlgladiatranscribe(url,target_language)
     end = time.time()
