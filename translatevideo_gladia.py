@@ -4,6 +4,7 @@ from audiofunctions import *
 from videofunctions import *
 from deepltranslate import *
 from audiosplitter import *
+from gladiatranscribe import *
 from cloud import *
 import json
 import os
@@ -12,7 +13,6 @@ import time
 
 def translatevideo(video, voice='Bella', captions=False, filepath='files/', filename= 'video.mp4', language='EN-US', cclanguage=None):
 	totalstart = time.time()
-	start = time.time()
 
 	if os.path.exists(filepath):
 		pass
@@ -20,6 +20,7 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 		os.makedirs(filepath)
 
 # STEP #0: Split audio into background & vocals______________________________________________________________________
+	start_time = time.time()
 	# Separate Audio
 	if captions and voice == False:
 		pass # Best way to keep it cheap; can use else function for captions, but adds $0.10/min
@@ -34,18 +35,20 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 		# Download vocals and background audio locally
 		downloadvideo(vocals, vocalspath)
 		downloadvideo(background, backgroundpath)
-	end = time.time()
-	splitaudiotime = end-start
+	end_time = time.time()
+	splitaudiotime = end_time-start_time
 
 # STEP #1: Take vocals and transcribe to timed text translation______________________________________________________
 	# Transcribe video to text
-	start = time.time()
+	start_time = time.time()
 	# Subtitles Only
 	if captions and voice == False:
-		text = localtranscription(video, 'en') # English is the most reliable for timing (see next Step for translation)
+		# text = localtranscription(video, 'en') # English is the most reliable for timing (see next Step for translation)
+		text = localgladiatranscribe(video, 'english')
 	# Vocals hyperlink preserved for web transcription
 	else:
-		text = getDeepgramTranscription(vocals, model='whisper-large') # TODO: accuracy testing for larger filesizes
+		# text = getDeepgramTranscription(vocals)
+		text = urlgladiatranscribe(vocals,'english')
 	print(text)
 
 	# TODO: split speakers into timed list/dictionary to individually train for each voice in media
@@ -55,33 +58,200 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 		file.write(str(text))
 	print('Video transcribed')
 
-	raw_text = text['results']['channels'][0]['alternatives'][0]['transcript']
-	subtitle_data = text['results']['channels'][0]['alternatives'][0]
-	words = text['results']['channels'][0]['alternatives'][0]['words']
-	paragraphs = text['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
-	
 	# intialize lists
 	sentences = []
 	transcripts = []
+	speakers = []
 	texts = []
 	cctexts = []
 	starts = []
 	ends = []
 	i = 0
 
-	# Sentence Level
-	# gather all paragraphs into unified list
-	for paragraph in paragraphs:
-		sentences.append(paragraph['sentences'])
-
-	# create text list, start list and end list
-	for sentence in sentences:
-		for group in sentence:
-			transcripts.append(group['text']) #no idea if this is going to work or not
-			starts.append(group['start'])
-			ends.append(group['end'])
-
+	# raw_text = text['results']['channels'][0]['alternatives'][0]['transcript']
+	# subtitle_data = text['results']['channels'][0]['alternatives'][0]
+	# words = text['results']['channels'][0]['alternatives'][0]['words']
+	# paragraphs = text['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
 	
+	# # Sentence Level
+	# # gather all paragraphs into unified list
+	# for paragraph in paragraphs:
+	# 	sentences.append(paragraph['sentences'])
+	# 	for sentence in paragraph['sentences']:
+	# 		speakers.append(paragraph['speaker'])
+
+	# # create text list, start list and end list
+	# for sentence in sentences:
+	# 	# {'sentences': [{'text': 'Speaking of Kobe, you brought up, you know, being a fan and growing up in this in in our generation, our era of basketball being in SoCal, and you get to watch him up close and personal.', 'start': 0.08, 'end': 9.62}, {'text': "Like, what what's your favorite or best moment playing against Cole?", 'start': 10.075, 'end': 13.855}], 'speaker': 0, 'num_words': 48, 'start': 0.08, 'end': 13.855},
+	# 	# {'sentences': [{'text': 'like, oh, shit.', 'start': 101.39, 'end': 101.95}], 'speaker': 0, 'num_words': 3, 'start': 101.39, 'end': 101.95},
+	# 	for group in sentence:
+	# 		transcripts.append(group['text']) #no idea if this is going to work or not
+	# 		starts.append(group['start'])
+	# 		ends.append(group['end'])
+
+	# Initialize speaker count and timing lists
+	speakercount = 0
+	begin = {0:[]}
+	finish = {0:[]}
+	body = {0:[]}
+
+	text = json.loads(text)
+	for group in text['prediction']:
+		transcripts.append(group['transcription']) 
+		starts.append(group['time_begin'])
+		ends.append(group['time_end'])
+		speaker = group['speaker']
+		if speaker > speakercount:
+			speakercount = speaker
+			begin[speaker] = []
+			finish[speaker] = []
+			body[speaker] = []
+		speakers.append(group['speaker'])
+		body[speaker].append(group['transcription'])
+		begin[speaker].append(group['time_begin'])
+		finish[speaker].append(group['time_end'])
+	print('List lengths:', len(speakers),len(body),len(begin),len(finish))
+	raw_text = transcripts
+
+
+
+	# for paragraph in paragraphs:
+	# 	# Count speakers
+	# 	speaker = paragraph['speaker']
+	# 	if speaker > speakercount:
+	# 		speakercount = speaker
+	# 		begin[speaker] = []
+	# 		finish[speaker] = []
+	# 		body[speaker] = []
+	# 	# Create start end lists for each speaker
+	# 	speaker = paragraph['speaker']
+	# 	# starts[speaker].append(paragraph['start'])
+	# 	# ends[speaker].append(paragraph['end'])
+	# 	for text in paragraph['sentences']:
+	# 		body[speaker].append(text['text'])
+	# 		begin[speaker].append(text['start'])
+	# 		finish[speaker].append(text['end'])
+
+
+	for speaker in range(speakercount+1):
+		# Combine the lists into tuples
+		combined_data = list(zip(body[speaker], begin[speaker], finish[speaker]))
+
+		# Sort based on the difference between end and start values
+		sorted_data = sorted(combined_data, key=lambda x: x[2] - x[1], reverse=True)
+
+		# Unpack the sorted data into separate lists
+		sorted_text, sorted_start, sorted_end = zip(*sorted_data)
+		body[speaker] = sorted_text
+		begin[speaker] = sorted_start
+		finish[speaker] = sorted_end
+
+	for speaker in begin:
+		i = 0
+		total_duration = 0
+		for start in begin[speaker]:
+			# Slice audio for each speaker, up to 5 minutes
+			end = finish[speaker][i]
+			clip_duration = end - start
+			total_duration += clip_duration
+			i+=1
+			if os.path.exists(filepath+f'speaker{speaker}'):
+				pass
+			else:
+				os.makedirs(filepath+f'speaker{speaker}')
+			if clip_duration > 1:
+				audioslicing(f'{filepath}vocals.wav', start, end, output = filepath+f'speaker{speaker}/audioslice{i}.mp3')
+
+			if total_duration > 61:
+				print('Threshold!')
+				break
+		
+
+	# # Initialize speaker count and timing lists
+	# speakercount = 0
+	# begin = {0:[]}
+	# finish = {0:[]}
+	# body = {0:[]}
+
+	# for paragraph in paragraphs:
+	# 	# Count speakers
+	# 	speaker = paragraph['speaker']
+	# 	if speaker > speakercount:
+	# 		speakercount = speaker
+	# 		begin[speaker] = []
+	# 		finish[speaker] = []
+	# 		body[speaker] = []
+	# 	# Create start end lists for each speaker
+	# 	speaker = paragraph['speaker']
+	# 	# starts[speaker].append(paragraph['start'])
+	# 	# ends[speaker].append(paragraph['end'])
+	# 	for text in paragraph['sentences']:
+	# 		body[speaker].append(text['text'])
+	# 		begin[speaker].append(text['start'])
+	# 		finish[speaker].append(text['end'])
+
+	# # Rearrange in order of longest clip to shortest clip for speed
+	# for speaker in range(speakercount):
+	# 	# Combine the lists into tuples
+	# 	combined_data = list(zip(body[speaker], begin[speaker], finish[speaker]))
+
+	# 	# Sort based on the difference between end and start values
+	# 	sorted_data = sorted(combined_data, key=lambda x: x[2] - x[1], reverse=True)
+
+	# 	# Unpack the sorted data into separate lists
+	# 	sorted_text, sorted_start, sorted_end = zip(*sorted_data)
+	# 	body[speaker] = sorted_text
+	# 	begin[speaker] = sorted_start
+	# 	finish[speaker] = sorted_end
+
+	# for speaker in begin:
+	# 	i = 0
+	# 	total_duration = 0
+	# 	for start in begin[speaker]:
+	# 		# Slice audio for each speaker, up to 1 minute
+	# 		end = sorted_end[i]
+	# 		clip_duration = end - start
+	# 		total_duration += clip_duration
+	# 		i+=1
+	# 		# print('Span: ', start, end)
+	# 		# print('Clip Duration:', clip_duration)
+	# 		# print('Total Duration:', total_duration)
+	# 		if os.path.exists(filepath+f'speaker{speaker}'):
+	# 			pass
+	# 		else:
+	# 			os.makedirs(filepath+f'speaker{speaker}')
+	# 		if clip_duration > 1:
+	# 			audioslicing(f'{filepath}vocals.wav', start, end, output = filepath+f'speaker{speaker}/audioslice{i}.mp3')
+	# 		else:
+	# 			pass
+	# 		if total_duration > 61: # 61 seconds of voice training data
+	# 			print('Threshold!')
+	# 			break
+		
+
+	for speaker in range(speakercount+1):
+		# Use glob to find all .mp3 files in the directory
+		speaker_files = glob.glob(os.path.join(filepath+f'speaker{speaker}/', "*.mp3"))
+		speaker_path = filepath+f'speaker{speaker}.mp3'
+		print(speaker_files)
+		# Iterate through the list of files
+		combined_audio = AudioSegment.silent(duration=0)
+		for mp3 in speaker_files:
+			# Assuming you want to combine all MP3 files into a single audio file
+			# Iterate through the list of MP3 files
+			# Load each MP3 file
+			audio = AudioSegment.from_mp3(mp3)
+
+			# Combine the audio segments
+			combined_audio += audio
+
+			# Export the combined audio to the specified path
+			combined_audio.export(speaker_path, format="mp3")
+
+
+
+	# input('Escape!')
+	# raise Exception('ruh roh')
 	# # # Word Level [Tonality between words is too different and doesn't flow well at all]
 	# # TODO: create character limit for subtitles so it doesn't run offscreen
 	# # # gather all paragraphs into unified list
@@ -132,12 +302,12 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# starts = startburnlist
 	# ends = endburnlist
 
-	end = time.time()
-	transcribetime = end-start
+	end_time = time.time()
+	transcribetime = end_time-start_time
 
 # STEP #1.5: Translate transcription with a separate API for greater accuracy________________________________________
 	# This step helps with word timing since Deepgram translations can be timed inconsistently
-	start = time.time()
+	start_time = time.time()
 	if language != 'EN-US' and language != None:
 		for transcript in transcripts:
 			print(transcript)
@@ -151,11 +321,11 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	else:
 		texts = transcripts
 
-	end = time.time()
-	translatetime = end-start
+	end_time = time.time()
+	translatetime = end_time-start_time
 
 # STEP #2: Create sub-title file (if requested)______________________________________________________________________
-	start = time.time()
+	start_time = time.time()
 	if captions:
 		# Separate subtitle translation if caption language differ from voice
 		if cclanguage != 'EN-US' and cclanguage != language:
@@ -181,28 +351,31 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 		# print('Subtitles created')
 	else:
 		subtitles = None
-	end = time.time()
-	captiontime = end-start
+	end_time = time.time()
+	captiontime = end_time-start_time
 
 # STEP #3: Create AI voice__________________________________________________________________________________________
-	aistart = time.time()
+	aistart_time = time.time()
 	if voice:
 		info = subscriptioninfo()
 		character_count = info['character_count']
 		character_limit = info['character_limit']
-		if character_count<character_limit:
-		# if True:
+		voices = {}
+		# if character_count<character_limit:
+		if True:
 			print('New audio requested')
 
 			# Use speaker voice if elected (always True currently)
-			if voice == 'Clone': # TODO: need to figure out how to train for multiple speakers
+			for speaker in range(speakercount+1):
+				vocalspath = filepath+f'speaker{speaker}.mp3'
 				voice = json.loads(addvoice(vocalspath, 'Clone'))
 				print('Voice:', voice)
 
 				# Filesize error prevention
 				file_size = os.path.getsize(vocalspath)
 				target_size = 10 * 1024 * 1024  # 10MB
-				audio = AudioSegment.from_file(vocalspath, format="wav")
+				print('Vocalspath:',vocalspath)
+				audio = AudioSegment.from_file(vocalspath, format="mp3")
 
 				# Calculate the duration for a 10MB audio clip (in milliseconds)
 				target_duration = (target_size / (file_size * 1.0)) * len(audio)
@@ -228,23 +401,31 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 					
 					# Retrieve result
 					voice = json.loads(addvoice(learningpath, 'Clone'))
+					# Add/Remove Voice Limits
+					# Starter: 65
+					# Creator: 95
+					# Independent Publisher: 290
+					# Growing Business: 1040
 					print('Voice: ', voice)
 
 					# Successful path (otherwise forever looping until filesize accepted)
 					if 'voice_id' in voice:
-						voice = voice['voice_id']
-						print('Voice ID: ', voice)
+						voices[speaker] = voice['voice_id']
+						print('Voice ID: ', voices[speaker])
 						break
 
 				# Voice added without upload error
 				else:
-					voice = voice['voice_id']
+					voices[speaker] = voice['voice_id']
 					print(voice, type(voice))
-
+			print('Voices:',voices)
+			# raise Exception('New territory that needs attention for new speakers')
 			# Make ai voice for text
 			i = 0
 			for text in texts:
 				# print(text)
+				speaker = speakers[i]
+				voice = voices[speaker]
 				# Create voice from text
 				aispeech(text=text, voice=voice, output = filepath+f'AI{i}.wav')
 				i += 1
@@ -286,16 +467,15 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 			new_audio = filepath+f'{len(texts)-1}.wav'
 
 		else:
-			raise Exception('we outta money') # intended to cause error because new_audio is undefined (if character limit exceeded on 11Labs)
-			# pass 
+			pass # intended to cause error because new_audio is undefined (if character limit exceeded on 11Labs)
 	else:
 		new_audio = None
 		print('No new audio requested')
-	aiend = time.time()
-	aivoicetime = aiend-aistart
+	aiend_time = time.time()
+	aivoicetime = aiend_time-aistart_time
 # STEP #4: Combine AI vocals with background and add to video_______________________________________________________	
 	# Combine background with AI voice:
-	start = time.time()
+	start_time = time.time()
 	if captions and voice == False:
 		pass
 	else:
@@ -307,23 +487,23 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 		subtitles = subtitles[49:] # issue with '/\' in FFMPEG; also should work on Heroku
 	add_new_audio(filepath+filename, new_audio, subtitles, output_video)
 	# print('New video file creation attempted')
-	end = time.time()
-	videocompiletime = end-start
+	end_time = time.time()
+	videocompiletime = end_time-start_time
 
 # STEP #5: Cloud storage of video file______________________________________________________________________________
 	# TODO: need to figure out permissions and link expiration; may be needed if filesize is too large to download
-	start = time.time()
+	start_time = time.time()
 	mp4link = serverlink(output_video, 'jargonspeak_'+filename)
 	if captions:
 		srtlink = serverlink(filepath+'subtitles.srt', 'jargonspeak_'+'subtitles.srt')
 	else:
 		srtlink = None
 	# jargonlink = None
-	end = time.time()
-	cloudtime = end-start
+	end_time = time.time()
+	cloudtime = end_time-start_time
 
 # STEP #6: Delete voice and remove files____________________________________________________________________________
-	start = time.time()
+	start_time = time.time()
 	# Use glob to find all .wav files in the directory
 	wav_files = glob.glob(os.path.join(filepath, "*.wav"))
 	# Use glob to find all .mp4 files in the directory
@@ -338,8 +518,8 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# TODO: ERROR file still in use (subprocess.popen.(deletefiles)?)
 	# for mp4_file in original_file:
 	# 	os.remove(mp4_file)
-	end = time.time()
-	cleanuptime = end-start
+	end_time = time.time()
+	cleanuptime = end_time-start_time
 	totalend = time.time()
 	totaltime = totalend-totalstart
 	timedictionary = {'splitaudiotime': f'{splitaudiotime}s', 'transcribetime': f'{transcribetime}s', 'translatetime': f'{translatetime}s', 'captiontime': f'{captiontime}s', 'aivoicetime': f'{aivoicetime}s', 'videocompiletime': f'{videocompiletime}s', 'cloudtime': f'{cloudtime}s', 'cleanuptime': f'{cleanuptime}s', 'totaltime': f"{totaltime}s"}
@@ -348,19 +528,23 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 
 
 if __name__ == '__main__':
-	# Julie's folder automation
-	import shutil
-	file_location = 'C:/Users/clayt/Videos/Video Translation/Julie Translations/To Be Translated/Greater than 10 Minutes/Errors/'
-	mp4_files = glob.glob(os.path.join(file_location, "*.mp4"))
-	for file in mp4_files:
-		filename = os.path.basename(file)
-		filepath = f'{file_location}{filename[:-4]}/'
-		# filepath = f'files/{visitorid}/' # Doesn't work on Heroku
-		if os.path.exists(filepath):
-			pass
-		else:
-			os.makedirs(filepath)
-		shutil.copy(file, filepath)
-		print('File copied!')
+	# # Julie's folder automation
+	# filepath = r'C:\Users\clayt\Videos\Video Translation\Julie Translations\Originals/'
+	# mp4_files = glob.glob(os.path.join(filepath, "*.mp4"))
+	# for file in mp4_files:
+	# 	filename = os.path.basename(file)
+	# 	translatevideo(file, voice='Clone', captions=False, filepath=filepath, filename=filename, language='EN-US')
 
-		translatevideo(file, voice='Clone', captions=False, filepath=filepath, filename=filename, language='EN-US')
+	# Other testing
+	import shutil
+	file = "C:/Users/clayt/Downloads/original.mp4"
+	filepath='files/superuser/'
+	filename = os.path.basename(file)
+	if os.path.exists(filepath):
+		pass
+	else:
+		os.makedirs(filepath)
+	shutil.copy(file, filepath)
+	print('File copied!')
+
+	translatevideo(file, voice='Clone', captions=False, filepath=filepath, filename=filename, language='FR')
