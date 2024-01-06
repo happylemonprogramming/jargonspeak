@@ -123,7 +123,7 @@ def detectvideo(video, max_length, filepath, filename):
     # Audio files
 	elif 'mp3' in video or 'wav' in video:
 		try:
-			print('Video url detected')
+			print('Audio url detected')
 			duration = AudioFileClip(video).duration
 		except Exception as e:
 			return f"Error: {str(e)}"
@@ -158,6 +158,16 @@ if __name__ == '__main__':
 	# print(duration)
 	# path = r'C:\Users\clayt\Documents\Programming\jargonspeak/files/f9ec6de472ec11eeba4418ff0f367121/'
 	# split(path+'original.mp4',path+'crop.mp4',822,905)
-	url = 'https://www.youtube.com/watch?v=Hd31dbJvGaU'
-	length = ytdownload(url, 'natebargatze2.mp4')
-	print(f'Video Length : {length}s')
+	# url = 'https://www.youtube.com/watch?v=Hd31dbJvGaU'
+	# length = ytdownload(url, 'natebargatze2.mp4')
+	# print(f'Video Length : {length}s')
+	# video = 'https://video.nostr.build/c4bc9f175d7d64dd5f3daf6dadeeb43e4d4b87f9ee3d2dd6bf7d11bdd2abd73f.mp4#m=video%2Fmp4&dim=1280x720&blurhash=i25X%3DJ00-%3BtQ9F-p9ZM%7Bxa%3FaIURj%25LIU%25MRjRjt700%7EW9GxaxuIo-%3BRjof4.-%3AjsIV-%3A9Z-%3ARjWCxaD*-%3AE1xuoeM%7B%25LIo&x=81914bdfaa42889076464aa7089ae8f28bdbc9115009e53bb703a1c294470b72'
+	# # url = 'https://video.nostr.build/c4bc9f175d7d64dd5f3daf6dadeeb43e4d4b87f9ee3d2dd6bf7d11bdd2abd73f.mp4'
+	# import re
+	# url = re.findall(r'https?://\S+\.mp4', video)[0]
+	# print(url)
+	# duration = detectvideo(url, max_length=3600, filepath='files/', filename='video.mp4')
+	# print(duration)
+	swann = "C:/Users/clayt/Videos/Video Translation/Guy Swan Translation/original.mp4"
+	output = "C:/Users/clayt/Videos/Video Translation/Guy Swan Translation/split.mp4"
+	split(swann,output,'10','70')

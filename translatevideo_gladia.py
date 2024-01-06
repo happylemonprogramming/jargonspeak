@@ -23,7 +23,10 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	start_time = time.time()
 	# Separate Audio
 	if captions and voice == False:
-		pass # Best way to keep it cheap; can use else function for captions, but adds $0.10/min
+		extractedaudio = filepath+'extractedaudio.mp3'
+		# Get audio from media
+		extract_audio(video, extractedaudio)
+		# Best way to keep it cheap; can use "splitaudio" for captions, but adds $0.10/min
 	else:
 		extractedaudio = filepath+'extractedaudio.mp3'
 		vocalspath = filepath+'vocals.wav'
@@ -44,13 +47,19 @@ def translatevideo(video, voice='Bella', captions=False, filepath='files/', file
 	# Subtitles Only
 	if captions and voice == False:
 		# text = localtranscription(video, 'en') # English is the most reliable for timing (see next Step for translation)
-		text = localgladiatranscribe(video, 'english')
+		text = localgladiatranscribe(extractedaudio, 'english') #TODO: figure out why local upload isn't working
 	# Vocals hyperlink preserved for web transcription
 	else:
 		# text = getDeepgramTranscription(vocals)
 		text = urlgladiatranscribe(vocals,'english')
+		# if "Error during file upload" in str(text):
+		# 	attempts = 1
+		# 	while "Error during file upload" in str(text) and attempts < 4:
+		# 		text = urlgladiatranscribe(vocals,'english')
+		# 		print(f'Transcription Attempt #{attempts}')
+		# 		attempts += 1
+				
 	print(text)
-
 	# TODO: split speakers into timed list/dictionary to individually train for each voice in media
 	
 	# Open the file in write mode and save 'text' to it
@@ -537,7 +546,7 @@ if __name__ == '__main__':
 
 	# Other testing
 	import shutil
-	file = "C:/Users/clayt/Downloads/original.mp4"
+	file = 'files/87eed6f9a6ae11eea4b718ff0f367121/video.mp4'
 	filepath='files/superuser/'
 	filename = os.path.basename(file)
 	if os.path.exists(filepath):

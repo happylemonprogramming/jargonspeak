@@ -29,7 +29,7 @@ def getevent(ids=None, kinds=None, authors=None, since=None, until=None, event_r
         io_loop.run_sync(r.connect)
     except gen.Return:
         pass
-    io_loop.stop()
+    # io_loop.stop()
 
     while message_pool.has_notices():
         notice_msg = message_pool.get_notice()
@@ -42,10 +42,12 @@ def getevent(ids=None, kinds=None, authors=None, since=None, until=None, event_r
     return event_list
 
 if __name__ == "__main__":
-    from pynostr.key import PublicKey
-    note = "note1gn882ya9mc5c6f8xyndzvznsg3sxsp06ht6rj5lqfktdgefnaxjq2pm8w2"
-    notehex = PublicKey.from_npub(note).hex()
-    event = getevent(ids=[notehex])
-    # print(event)
-    video = event[0][1]['tags'][1][1]
-    print(video)
+    # from pynostr.key import PublicKey
+    # note = "note1gn882ya9mc5c6f8xyndzvznsg3sxsp06ht6rj5lqfktdgefnaxjq2pm8w2"
+    # notehex = PublicKey.from_npub(note).hex()
+    # event = getevent(ids=[notehex])
+    # # print(event)
+    # video = event[0][1]['tags'][1][1]
+    # print(video)
+    event = getevent(kinds=[6250])
+    print(event)

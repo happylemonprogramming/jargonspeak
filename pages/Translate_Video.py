@@ -5,9 +5,11 @@ import streamlit as st
 import os
 import time
 from translatevideo_gladia import translatevideo #test new method
+# from translatevideo import translatevideo
 from translateaudio import translateaudio
 from videofunctions import split, detectvideo
 from audiofunctions import audioslicing
+from sendemail import sendemail
 from lightningpay import *
 from qrcodegenerator import *
 import uuid
@@ -101,13 +103,18 @@ if cc == True:
 else:
     cclanguage = None
 
+# User email
+recipient = st.text_input('Email for download link (optional):')
+
 # promo = st.text_input('Enter Promo Code (optional):')
 promo = 'superspecialcode'
 
 # Voice & Subtitle logic path
-# if voice or cc:
+if voice or cc:
     # check = st.checkbox('I understand this application is experimental and AI content can be unpredictable.')
-click = st.button(':rocket: Launch!')
+    click = st.button(':rocket: Launch!')
+else:
+    click = False
 if click:
         with st.spinner('Downloading video...'):
             # User folder
@@ -163,9 +170,13 @@ if click:
                     from getevent import getevent
                     notehex = PublicKey.from_npub(video_url).hex()
                     event = getevent(ids=[notehex])
-                    nostr_video = event[0][1]['tags'][1][1]
-                    video_url = nostr_video
+                    print(event)
+                    # nostr_video = event[0][1]['tags'][1][1]
+                    import re
+                    nostr_video = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(event))
+                    video_url = nostr_video[0]
                     print('The Nostr url: ', video_url)
+                    filename = 'original.mp4'
     
                 video = video_url
 
@@ -173,7 +184,7 @@ if click:
             filetype = video[-4:]
             if filetype.lower() == '.mp3':
                 filename = 'original.mp3'
-            if filetype.lower() == '.mp4' or 'youtube' in video:
+            if filetype.lower() == '.mp4' or 'youtube' in video or 'youtu.be' in video:
                 filename = 'original.mp4'
 
             if os.path.exists(filepath):
@@ -269,13 +280,20 @@ if click:
                     filename = 'cropped.mp4'
                     video = filepath+filename
                 response = translatevideo(video, voice=voice, captions=cc, filepath=filepath, filename=filename, language=language, cclanguage=cclanguage)
-            elif 'mp3' in filename or 'wav' in filename:
-                if clip_end != 0:
-                    print('Media path: ', video)
-                    audioslicing(video, clip_start, clip_end, filepath+'cropped.mp3')
-                    filename = 'cropped.mp3'
-                    video = filepath+filename
-                response = translateaudio(video, voice=voice, filepath=filepath, filename=filename, language=language)
+                if recipient:
+                    # TODO: add subprocess procedure using format below
+                    # import subprocess
+                    # virtualenv_python = r"C:\Users\clayt\Documents\Programming\nostr-windows\env\Scripts\python.exe"
+                    # # virtualenv_python = 'python' #for Heroku
+                    # subprocess.Popen([virtualenv_python, "nostrpublish.py", str(kind),str(tags),content]) #try Popen instead of run
+                    sendemail(recipient,response[2])
+            # elif 'mp3' in filename or 'wav' in filename:
+            #     if clip_end != 0:
+            #         print('Media path: ', video)
+            #         audioslicing(video, clip_start, clip_end, filepath+'cropped.mp3')
+            #         filename = 'cropped.mp3'
+            #         video = filepath+filename
+            #     response = translateaudio(video, voice=voice, filepath=filepath, filename=filename, language=language)
             formatted_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-start))
             print(f"Total program ran successfully! ({formatted_time})")
             # print(f"Total program ran successfully! ({round((time.time()-start)/60.00,2)}min)")
@@ -295,12 +313,12 @@ if click:
         #     binary = file.read()
         # st.download_button(label='Download', data=binary, file_name='jargonspeak.mp4', mime='video/mp4')
 
-        # Check accuracy relative to transcription based on minimum character changes
-        original_text = response[1]
-        from deeptranscribe import getDeepgramTranscription, localtranscription
-        # text = getDeepgramTranscription(response[2])
-        text = localtranscription(filepath+'jargonspeak_'+filename, 'en-us')
-        new_text = text['results']['channels'][0]['alternatives'][0]['transcript']
-        from levenshteinalgorithm import calculate_similarity
-        similarity = calculate_similarity(original_text, new_text)
-        print(f'{similarity:.2f}% Accurate to Transcription')
+        # # Check accuracy relative to transcription based on minimum character changes
+        # original_text = response[1]
+        # from deeptranscribe import getDeepgramTranscription, localtranscription
+        # # text = getDeepgramTranscription(response[2])
+        # text = localtranscription(filepath+'jargonspeak_'+filename, 'en-us')
+        # new_text = text['results']['channels'][0]['alternatives'][0]['transcript']
+        # from levenshteinalgorithm import calculate_similarity
+        # similarity = calculate_similarity(original_text, new_text)
+        # print(f'{similarity:.2f}% Accurate to Transcription')

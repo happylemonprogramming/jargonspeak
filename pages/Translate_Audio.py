@@ -8,6 +8,7 @@ from translatevideo import translatevideo
 from translateaudio import translateaudio
 from videofunctions import split, detectvideo
 from audiofunctions import audioslicing
+from sendemail import sendemail
 from lightningpay import *
 from qrcodegenerator import *
 import uuid
@@ -101,13 +102,18 @@ cclanguage = None
 # else:
 #     cclanguage = None
 
+# User email
+recipient = st.text_input('Email for download link (optional):')
+
 # promo = st.text_input('Enter Promo Code (optional):')
 promo = 'superspecialcode'
 
 # Voice & Subtitle logic path
-# if voice or cc:
+if voice or cc:
     # check = st.checkbox('I understand this application is experimental and AI content can be unpredictable.')
-click = st.button(':rocket: Launch!')
+    click = st.button(':rocket: Launch!')
+else:
+    click = False
 if click:
         with st.spinner('Downloading video...'):
             # User folder
@@ -262,20 +268,22 @@ if click:
         with st.spinner('Running... This may take a few minutes.'):
             start = time.time()
             filename = filename.strip().replace(' ','')
-            if 'mp4' in filename or 'mov' in filename:
-                if clip_end != 0:
-                    print('Media path: ', video)
-                    split(video, filepath+'cropped.mp4', clip_start, clip_end)
-                    filename = 'cropped.mp4'
-                    video = filepath+filename
-                response = translatevideo(video, voice=voice, captions=cc, filepath=filepath, filename=filename, language=language, cclanguage=cclanguage)
-            elif 'mp3' in filename or 'wav' in filename:
+            # if 'mp4' in filename or 'mov' in filename:
+            #     if clip_end != 0:
+            #         print('Media path: ', video)
+            #         split(video, filepath+'cropped.mp4', clip_start, clip_end)
+            #         filename = 'cropped.mp4'
+            #         video = filepath+filename
+            #     response = translatevideo(video, voice=voice, captions=cc, filepath=filepath, filename=filename, language=language, cclanguage=cclanguage)
+            if 'mp3' in filename or 'wav' in filename:
                 if clip_end != 0:
                     print('Media path: ', video)
                     audioslicing(video, clip_start, clip_end, filepath+'cropped.mp3')
                     filename = 'cropped.mp3'
                     video = filepath+filename
                 response = translateaudio(video, voice=voice, filepath=filepath, filename=filename, language=language)
+                if recipient:
+                    sendemail(recipient,response[2])
             formatted_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-start))
             print(f"Total program ran successfully! ({formatted_time})")
             # print(f"Total program ran successfully! ({round((time.time()-start)/60.00,2)}min)")

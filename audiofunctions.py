@@ -158,8 +158,8 @@ def audiospeed(input_audio, output_audio, speed):
     # Speed is bounded by limits of FFMPEG [0.50,100.00]
     if speed < 0.66: # Below 2/3X speed, speech is too stretched (Tradeoff: there will be a pause)
         speed = 0.66
-    elif speed > 3.00: # Beyond 3X speed, speech is unintelligible (Tradeoff: potential overlapping)
-        speed = 3.00
+    elif speed > 2.50: # Beyond 2.5X speed, speech is unintelligible (Tradeoff: potential overlapping)
+        speed = 2.50
     else:
         speed = speed
     ffmpeg_cmd = [

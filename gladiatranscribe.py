@@ -30,7 +30,7 @@ def localgladiatranscribe(path, target_language):
         'video': open(path, 'rb'),
     }
 
-    response = requests.post('https://api.gladia.io/video/text/video-transcription/', headers=headers, files=files)
+    response = requests.post('https://api.gladia.io/audio/text/audio-transcription/', headers=headers, files=files)
     return response.text
 
 
