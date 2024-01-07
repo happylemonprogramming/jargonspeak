@@ -90,8 +90,9 @@ while condition:
                     quoted_events[eventID] = invid
                     print('Invoice Created')
 
-                # Reply with invoice
-                nostrreply(private_key,kind=1,content=lninv,noteID=eventID,pubkey_ref=pubkey_ref)
+                    # Reply with invoice
+                    nostrreply(private_key,kind=1,content=lninv,noteID=eventID,pubkey_ref=pubkey_ref)
+                    
                 break
 
         # Check invoice status and save ID for status check 
