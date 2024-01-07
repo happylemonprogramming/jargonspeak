@@ -76,7 +76,7 @@ while condition:
                 with open(filepath+f'Swannbot{eventID}', 'w', encoding='utf-8') as file:
                     file.write(targetContent)
 
-                if pubkey in [botpubhex, swannpubhex]:
+                if pubkey_ref in [botpubhex, swannpubhex]:
                     # Bot free to use for public keys in list
                     invid = 'f5a74c0d-679b-4fc2-8e88-68979f24ded1' # Pre-PAID invoice ID
                     quoted_events[eventID] = invid
