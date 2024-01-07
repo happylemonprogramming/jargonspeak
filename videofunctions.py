@@ -2,10 +2,16 @@ import subprocess
 import time
 import subprocess
 import yt_dlp
+import os
 from pytube import YouTube
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.editor import AudioFileClip
+from moviepy.config import change_settings
 import requests
+
+heroku = "DYNO" in os.environ
+if heroku:
+	change_settings({"FFMPEG_BINARY": "app/vendor/ffmpeg/ffmpeg"}) # Heroku only
 
 def downloadvideo(url, local_filename):
 	try:
@@ -168,6 +174,9 @@ if __name__ == '__main__':
 	# print(url)
 	# duration = detectvideo(url, max_length=3600, filepath='files/', filename='video.mp4')
 	# print(duration)
-	swann = "C:/Users/clayt/Videos/Video Translation/Guy Swan Translation/original.mp4"
-	output = "C:/Users/clayt/Videos/Video Translation/Guy Swan Translation/split.mp4"
-	split(swann,output,'10','70')
+	# swann = "C:/Users/clayt/Videos/Video Translation/Guy Swan Translation/original.mp4"
+	# output = "C:/Users/clayt/Videos/Video Translation/Guy Swan Translation/split.mp4"
+	# split(swann,output,'10','70')
+	url = 'https://video.twimg.com/amplify_video/1743806146354544640/vid/avc1/716x820/8onXfkDi0T-1Q4Xc.mp4'	
+	duration = detectvideo(url, 3600, filepath='files/', filename='video.mp4')
+	print(duration)
