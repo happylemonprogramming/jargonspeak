@@ -142,7 +142,7 @@ def detectvideo(video, max_length, filepath, filename):
 	else:
 		try:
 			print('Video url detected')
-			duration = VideoFileClip(video).duration
+			duration = VideoFileClip(video, ffmpeg="/app/vendor/ffmpeg/ffmpeg").duration
 		except Exception as e:
 			return f"Error: {str(e)}"
 		if duration < max_length:
