@@ -69,3 +69,10 @@ def invoice_status(invoiceId):
   response = requests.request("GET", url, headers=headers, data=payload)
   status = response.json()['state']
   return status
+
+if __name__ == '__main__':
+   import qrcode
+   amount = '0.01'
+   description = 'Example Payment Completion'
+   lninv, conv_rate, invid = lightning_quote(amount, description)
+   qrcode.make(lninv).show()

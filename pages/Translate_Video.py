@@ -203,6 +203,7 @@ if click:
                 raise Exception('Start time cannot be after end time.')
             else:
                 duration = detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
+                print('Duration:', duration)
             video = filepath+filename
 
         with st.spinner('Pending lightning invoice...'):

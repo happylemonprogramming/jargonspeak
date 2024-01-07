@@ -139,7 +139,7 @@ def detectvideo(video, max_length, filepath, filename):
 		if duration < max_length:
 			downloadvideo(video, filepath+filename)
 		else:
-			raise Exception(f'Video length exceeds {max_length}s')
+			raise Exception(f'Audio length exceeds {max_length}s')
 
     # Any other link
 	else:
