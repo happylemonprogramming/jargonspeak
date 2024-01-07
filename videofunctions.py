@@ -9,10 +9,6 @@ from moviepy.editor import AudioFileClip
 from moviepy.config import change_settings
 import requests
 
-heroku = "DYNO" in os.environ
-if heroku:
-	change_settings({"FFMPEG_BINARY": "/app/vendor/ffmpeg/ffmpeg"}) # Heroku only
-
 def downloadvideo(url, local_filename):
 	try:
 		start = time.time()
@@ -85,6 +81,13 @@ def ytvideolength(video_url):
     return video_length
 
 def detectvideo(video, max_length, filepath, filename):
+	heroku = "DYNO" in os.environ
+	if heroku:
+		change_settings({"FFMPEG_BINARY": "/app/vendor/ffmpeg/ffmpeg"}) # Heroku only
+		print('Heroku True')
+	else:
+		print('Heroku False')
+
 	# # Local file
 	# if 'http' not in video:
 	# 	# Get the duration of the video in seconds.
