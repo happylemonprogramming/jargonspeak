@@ -11,7 +11,7 @@ import requests
 
 heroku = "DYNO" in os.environ
 if heroku:
-	change_settings({"FFMPEG_BINARY": "app/vendor/ffmpeg/ffmpeg"}) # Heroku only
+	change_settings({"FFMPEG_BINARY": "/app/vendor/ffmpeg/ffmpeg"}) # Heroku only
 
 def downloadvideo(url, local_filename):
 	try:
