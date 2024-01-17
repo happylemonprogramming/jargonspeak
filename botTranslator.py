@@ -96,6 +96,10 @@ while condition:
                     duration = detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
                     print('Video Duration:', duration)
 
+                    # Set language
+                    target_language = languages[language]
+                    print('Target Language Code:', target_language)
+
                     if pubkey_ref in [botpubhex]:
                         # Bot free to use for public keys in list
                         invid = 'f5a74c0d-679b-4fc2-8e88-68979f24ded1' # Pre-PAID invoice ID
@@ -105,8 +109,6 @@ while condition:
                         costPerMinute = 0.79
                         durationInMinutes = round(int(duration)/60)
                         quote = costPerMinute*durationInMinutes #TODO: update from 0.01
-                        target_language = languages[language]
-                        print('Target Language Code:', target_language)
                         lninv, conv_rate, invid = lightning_quote('0.01',f'Video Translation Quote ({durationInMinutes} minutes)') #TODO: dynamic pricing ($0.01 for testing)
                         quoted_events[eventID] = invid
                         print('Invoice Created')
@@ -129,6 +131,7 @@ while condition:
                         pubkey_ref = tag[1]
 
                 # Translate content
+                print('Video input path:', filepath+filename)
                 response = translatevideo(video=filepath+filename, voice='Clone', captions=True, filepath=filepath, filename=filename, language=target_language, cclanguage=target_language)
                 translated_video = response[2]
                 public_url = re.findall(r'https?://\S+?\.mp4', translated_video)[0]
