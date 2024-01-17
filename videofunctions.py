@@ -4,6 +4,7 @@ import subprocess
 import yt_dlp
 import os
 from pytube import YouTube
+from urllib.parse import urlparse
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.editor import AudioFileClip
 from moviepy.config import change_settings
@@ -79,6 +80,11 @@ def ytvideolength(video_url):
         video_length = info_dict.get('duration', 0)
 
     return video_length
+
+def extract_youtube_links(targetContent):
+	parsed_urls = [urlparse(url) for url in targetContent.split() if 'youtube' in url or 'youtu.be' in url]
+	youtube_urls = [url.geturl() for url in parsed_urls if url.netloc == 'youtu.be' or 'youtube.com' in url.netloc]
+	return youtube_urls
 
 def detectvideo(video, max_length, filepath, filename):
 	heroku = "DYNO" in os.environ

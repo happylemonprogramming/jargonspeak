@@ -8,11 +8,11 @@ from getevent import getevent
 from lightningpay import *
 from nostrreply import nostrreply
 from translatevideo_gladia import translatevideo
-from videofunctions import detectvideo
+from videofunctions import detectvideo, extract_youtube_links
 
 # Set bot Public Key
 botpubkey = 'npub1hee433872q2gen90cqh2ypwcq9z7y5ugn23etrd2l2rrwpruss8qwmrsv6' #TODO: update to DVM key
-pubhex = PublicKey.from_npub(botpubkey).hex()
+botpubhex = PublicKey.from_npub(botpubkey).hex()
 private_key = os.environ["nostrdvmprivatekey"]
 
 # Set available languages
@@ -51,7 +51,7 @@ since = round(time.time())
 
 # Run continuously
 while condition:
-    event_list = getevent(kinds=[1],pubkey_refs=[pubhex], since=since) # added since condition to keep filter current replies
+    event_list = getevent(kinds=[1],pubkey_refs=[botpubhex], since=since) # added since condition to keep filter current replies
     for event in event_list:
         # NOTE: Pubkey reference should have target language in content
         eventID = event[1]['id']
@@ -83,8 +83,12 @@ while condition:
                     # Isolate video link
                     targetContent = target_event[1]['content']
                     print('Target Event Content:', targetContent)
-                    video = re.findall(r'https?://\S+\.mp4', targetContent)[0] # assumes single url
-                    print('Video url:', video)
+                    if 'youtube' in targetContent or 'youtu.be' in targetContent:
+                        video = extract_youtube_links(targetContent)[0]
+                        print('YouTube url:', video)
+                    else:
+                        video = re.findall(r'https?://\S+\.mp4', targetContent)[0] # assumes single url
+                        print('Video url:', video)
                     
                     # Detect video duration
                     max_length = 300
@@ -92,18 +96,23 @@ while condition:
                     duration = detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
                     print('Video Duration:', duration)
 
-                    # Get pricing and save invoice id
-                    costPerMinute = 0.79
-                    durationInMinutes = round(int(duration)/60)
-                    quote = costPerMinute*durationInMinutes #TODO: update from 0.01
-                    target_language = languages[language]
-                    print('Target Language Code:', target_language)
-                    lninv, conv_rate, invid = lightning_quote('0.01',f'Video Translation Quote ({durationInMinutes} minutes)') #TODO: dynamic pricing ($0.01 for testing)
-                    quoted_events[eventID] = invid
-                    print('Invoice Created')
+                    if pubkey_ref in [botpubhex]:
+                        # Bot free to use for public keys in list
+                        invid = 'f5a74c0d-679b-4fc2-8e88-68979f24ded1' # Pre-PAID invoice ID
+                        quoted_events[eventID] = invid
+                    else:
+                        # Get pricing and save invoice id
+                        costPerMinute = 0.79
+                        durationInMinutes = round(int(duration)/60)
+                        quote = costPerMinute*durationInMinutes #TODO: update from 0.01
+                        target_language = languages[language]
+                        print('Target Language Code:', target_language)
+                        lninv, conv_rate, invid = lightning_quote('0.01',f'Video Translation Quote ({durationInMinutes} minutes)') #TODO: dynamic pricing ($0.01 for testing)
+                        quoted_events[eventID] = invid
+                        print('Invoice Created')
 
-                    # Reply with invoice
-                    nostrreply(private_key,kind=1,content=lninv,noteID=eventID,pubkey_ref=pubkey_ref)
+                        # Reply with invoice
+                        nostrreply(private_key,kind=1,content=lninv,noteID=eventID,pubkey_ref=pubkey_ref)
                     break
 
         # Check invoice status and save ID for status check 
