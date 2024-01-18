@@ -5,6 +5,8 @@ import yt_dlp
 import os
 from pytube import YouTube
 from urllib.parse import urlparse
+import imageio
+imageio.plugins.ffmpeg.download()
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.editor import AudioFileClip
 from moviepy.config import change_settings
