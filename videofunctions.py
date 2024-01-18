@@ -1,13 +1,10 @@
-import subprocess
 import time
 import subprocess
 import yt_dlp
 import os
 from pytube import YouTube
 from urllib.parse import urlparse
-import imageio
-imageio.plugins.ffmpeg.download()
-from moviepy.video.io.VideoFileClip import VideoFileClip
+# from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.editor import AudioFileClip
 from moviepy.config import change_settings
 import requests
@@ -88,6 +85,39 @@ def extract_youtube_links(targetContent):
 	youtube_urls = [url.geturl() for url in parsed_urls if url.netloc == 'youtu.be' or 'youtube.com' in url.netloc]
 	return youtube_urls
 
+def probe(input_vid):
+    ffprobe_cmd = [
+        'ffprobe', 
+        '-v', 'error', '-show_entries', 
+        'format=duration', '-of', 
+        'default=noprint_wrappers=1:nokey=1', input_vid
+        ]
+    
+    try:
+        # Run the command using Popen
+        process = subprocess.Popen(ffprobe_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        
+        # Capture the standard output and error
+        stdout, stderr = process.communicate()
+
+        # Check if the command was successful
+        if process.returncode == 0 and stdout is not None:
+            try:
+                duration = float(stdout)
+                print(f"Video duration: {duration} seconds")
+                return duration
+            except ValueError:
+                print("Error: Unable to convert duration to float")
+                return None
+        else:
+            # Print the error message if the command failed
+            print(f"Error: {stderr}")
+            return None
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return None
+
 def detectvideo(video, max_length, filepath, filename):
 	heroku = "DYNO" in os.environ
 	if heroku:
@@ -153,10 +183,11 @@ def detectvideo(video, max_length, filepath, filename):
 	else:
 		try:
 			print('Video url detected')
-			duration = VideoFileClip(video).duration
+		# 	duration = VideoFileClip(video).duration
+			duration = probe(video)
 		except Exception as e:
 			return f"Error: {str(e)}"
-		if duration < max_length:
+		if duration!=None and duration < max_length:
 			downloadvideo(video, filepath+filename)
 		else:
 			raise Exception(f'Video length exceeds {max_length}s')
