@@ -111,11 +111,11 @@ def probe(input_vid):
                 return None
         else:
             # Print the error message if the command failed
-            print(f"Error: {stderr}")
+            print(f"Stderr: {stderr}")
             return None
 
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Exception: {str(e)}")
         return None
 
 def detectvideo(video, max_length, filepath, filename):
