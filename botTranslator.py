@@ -60,26 +60,32 @@ while condition:
 
         if eventID not in completed_events and eventID not in quoted_events:
             for language in list(languages.keys()):
-                if language in event[1]['content']:
+                if language.lower() in eventContent.lower():
                     # Get public key reference for user
+                    pubkey_ref_list = []
                     for tag in event[1]['tags']:
                         if tag[0] == 'p':
-                            pubkey_ref = tag[1]
+                            # pubkey_ref = tag[1]
+                            pubkey_ref_list.append(tag[1])
                         if tag[0] == 'e':
                             target_eventID = tag[1]
 
                     # User folder creation
                     visitorid = uuid.uuid1().hex
-                    # filepath = os.getcwd() + f'/files/{visitorid}/' # Doesn't work locally
-                    filepath = f'files/{visitorid}/' # Doesn't work on Heroku
+                    filepath = f'files/{visitorid}/'
                     if os.path.exists(filepath):
                         pass
                     else:
                         os.makedirs(filepath)
 
+                    # Write the pubkey_ref_list to a text file
+                    with open('pubkey_ref_list.txt', 'w') as file:
+                        file.write(pubkey_ref_list)
+
                     # Get target video content
                     target_event = getevent(ids=[target_eventID])[0]
                     print('Target Event:', target_event)
+                    
                     # Isolate video link
                     targetContent = target_event[1]['content']
                     print('Target Event Content:', targetContent)
@@ -92,7 +98,7 @@ while condition:
                     
                     # Detect video duration
                     max_length = 300
-                    filename = 'video.mp4'
+                    filename = f'{visitorid}.mp4'
                     duration = detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
                     print('Video Duration:', duration)
 
@@ -100,7 +106,7 @@ while condition:
                     target_language = languages[language]
                     print('Target Language Code:', target_language)
 
-                    if pubkey_ref in [botpubhex]:
+                    if botpubhex in pubkey_ref_list:
                         # Bot free to use for public keys in list
                         invid = 'f5a74c0d-679b-4fc2-8e88-68979f24ded1' # Pre-PAID invoice ID
                         quoted_events[eventID] = invid
@@ -114,7 +120,7 @@ while condition:
                         print('Invoice Created')
 
                         # Reply with invoice
-                        nostrreply(private_key,kind=1,content=lninv,noteID=eventID,pubkey_ref=pubkey_ref)
+                        nostrreply(private_key,kind=1,content=lninv,noteID=eventID,pubkey_ref=pubkey_ref_list)
                     break
 
         # Check invoice status and save ID for status check 
@@ -126,17 +132,20 @@ while condition:
             # Provide content if paid
             if status == 'PAID':
                 # Get public key reference for user
+                pubkey_ref_list = []
                 for tag in event[1]['tags']:
                     if tag[0] == 'p':
-                        pubkey_ref = tag[1]
+                        # pubkey_ref = tag[1]
+                        pubkey_ref_list.append(tag[1])
 
                 # Translate content
                 print('Video input path:', filepath+filename)
                 response = translatevideo(video=filepath+filename, voice='Clone', captions=True, filepath=filepath, filename=filename, language=target_language, cclanguage=target_language)
                 translated_video = response[2]
                 public_url = re.findall(r'https?://\S+?\.mp4', translated_video)[0]
+
                 # Post paid content
-                nostrreply(private_key,kind=1,content=public_url,noteID=eventID,pubkey_ref=pubkey_ref)
+                nostrreply(private_key,kind=1,content=public_url,noteID=eventID,pubkey_ref=pubkey_ref_list)
                 
                 # Update lists
                 quoted_events.pop(eventID)

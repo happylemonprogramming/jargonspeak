@@ -44,6 +44,10 @@ def nostrreply(private_key,kind,content,noteID,pubkey_ref,bolt11=None, amount=No
         tags = [["status", "payment-required", "Swann DVM"], ["amount", f"{amount}", f"{bolt11}"], ["e", f"{noteID}"], ["p", f"{pubkey_ref}"]]
     elif eventInput!=None:
         tags = [["i", f"{eventInput}", "event"]]
+    elif isinstance(pubkey_ref, list):
+        tags = [["e", f"{noteID}"]]
+        for pubkey in pubkey_ref:
+            tags.append(["p", f"{pubkey}"])
     else:
         tags = [["e", f"{noteID}"], ["p", f"{pubkey_ref}"]]
     # Replace single quotes with double quotes
