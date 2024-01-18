@@ -78,10 +78,6 @@ while condition:
                     else:
                         os.makedirs(filepath)
 
-                    # Write the pubkey_ref_list to a text file
-                    with open('pubkey_ref_list.txt', 'w') as file:
-                        file.write(pubkey_ref_list)
-
                     # Get target video content
                     target_event = getevent(ids=[target_eventID])[0]
                     print('Target Event:', target_event)
