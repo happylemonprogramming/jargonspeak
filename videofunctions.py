@@ -87,7 +87,7 @@ def extract_youtube_links(targetContent):
 
 def probe(input_vid):
     ffprobe_cmd = [
-        'ffprobe', 
+        '/app/vendor/ffmpeg/ffprobe', 
         '-v', 'error', '-show_entries', 
         'format=duration', '-of', 
         'default=noprint_wrappers=1:nokey=1', input_vid
@@ -111,7 +111,10 @@ def probe(input_vid):
                 return None
         else:
             # Print the error message if the command failed
+            print(f"Process: {process}")
+            print(f"Stdout: {stdout}")
             print(f"Stderr: {stderr}")
+
             return None
 
     except Exception as e:
@@ -121,7 +124,7 @@ def probe(input_vid):
 def detectvideo(video, max_length, filepath, filename):
 	heroku = "DYNO" in os.environ
 	if heroku:
-		change_settings({"FFMPEG_BINARY": "/app/vendor/ffmpeg/ffmpeg"}) # Heroku only
+		# change_settings({"FFMPEG_BINARY": "/app/vendor/ffmpeg/ffmpeg"}) # Heroku only
 		print('Heroku True')
 	else:
 		print('Heroku False')
