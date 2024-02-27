@@ -93,7 +93,10 @@ while condition:
                         print('Video url:', video)
                     
                     # Detect video duration
-                    max_length = 300
+                    if botpubhex in pubkey_ref_list:
+                        max_length = 7200
+                    else:
+                        max_length = 300
                     filename = f'{visitorid}.mp4'
                     duration = detectvideo(video=video,max_length=max_length,filepath=filepath, filename=filename)
                     print('Video Duration:', duration)
