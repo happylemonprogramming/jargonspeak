@@ -23,7 +23,7 @@ def lightning_invoice(amount, description):
     "correlationId": generate_invoice_id(),#</= 40 characters
     "description": description, #</= 200 characters
     "amount": {
-      "currency": "USD",
+      "currency": "USD", # [BTC, USD, EUR, USDT, GBP]
       "amount": amount #for testing purposes
     }
   })

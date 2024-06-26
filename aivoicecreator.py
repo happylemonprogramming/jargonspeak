@@ -147,7 +147,8 @@ if __name__ == '__main__':
     # voice_id = addvoice(audio_file_path,'jobbyjobs')
     # import json
     # voice = json.loads(voice_id)
-    speechtospeech('cheatcode.mp3','mzzyrHBdOjyMhiNl1rT7')
+    # speechtospeech('cheatcode.mp3','mzzyrHBdOjyMhiNl1rT7')
+    aispeech('can you take me higher? to a place where blind men see. lets go there. lets make some mistakes, come on.','30onnySJpZzctyufqBND')
     # {'tier': 'creator', 
     #  'character_count': 67386, 
     #  'character_limit': 100029, 
