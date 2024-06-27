@@ -52,12 +52,13 @@ def nostrreply(private_key,kind,content,noteID,pubkey_ref,bolt11=None, amount=No
             tags.append(["p", f"{pubkey}"])
     else:
         tags = [["request", f"{jobrequest}"], ["e", f"{noteID}"], ["p", f"{pubkey_ref}"]]
-    # Replace single quotes with double quotes
-    tags = str(tags)
-    tags = tags.replace("'", "\"")
+    # # Replace single quotes with double quotes
+    # tags = str(tags)
+    # tags = tags.replace("'", "\"")
 
-    # Convert the string to a list using JSON
-    print("Tags before conversion:", tags)
+    # # Convert the string to a list using JSON
+    # print("Tags before conversion:", tags)
+    tags = json.dumps(tags)
     tags = json.loads(tags)
     # tags = json.dumps(tags)
     print(tags)
