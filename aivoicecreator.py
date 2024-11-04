@@ -69,6 +69,30 @@ def aispeech(text=None,voice='Bella',output='speechoutput.wav',text_file=None):
     print(f"AI speech created successfully! ({round(time.time()-start,2)}s)")
     return output
 
+def texttospeech(text, voice='Bella', output='speechoutput.wav'):
+    import requests
+
+    CHUNK_SIZE = 1024
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice}"
+
+    headers = {
+    "Accept": "audio/mpeg",
+    "Content-Type": "application/json",
+    "xi-api-key": os.environ.get('elevenlabsapikey')
+    }
+
+    data = {
+    "text": text,
+    "model_id": "eleven_multilingual_v2"
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+    with open(output, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
+            if chunk:
+                f.write(chunk)
+
+    return output
 
 def addvoice(audio,name):
     start = time.time()
@@ -148,7 +172,12 @@ if __name__ == '__main__':
     # import json
     # voice = json.loads(voice_id)
     # speechtospeech('cheatcode.mp3','mzzyrHBdOjyMhiNl1rT7')
-    aispeech('can you take me higher? to a place where blind men see. lets go there. lets make some mistakes, come on.','30onnySJpZzctyufqBND')
+    # print(texttospeech('can you take me higher? to a place where blind men see. lets go there. lets make some mistakes, come on.','30onnySJpZzctyufqBND'))
+    info = subscriptioninfo()
+    character_count = info['character_count']
+    character_limit = info['character_limit']
+    print(info)
+    print(character_count,character_limit)
     # {'tier': 'creator', 
     #  'character_count': 67386, 
     #  'character_limit': 100029, 

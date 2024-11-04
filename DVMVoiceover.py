@@ -9,13 +9,15 @@ import re
 from getevent import getevent
 from lightningpay import *
 from nostrreply import nostrreply
-from aivoicecreator import aispeech
+from aivoicecreator import aispeech, subscriptioninfo
 from cloud import *
 
 # Set bot Public Key
-botpubkey = 'npub10sa7ya5uwmhv6mrwyunkwgkl4cxc45spsff9x3fp2wuspy7yze2qr5zx5p' # NOTE: DVM public key for reference only
+# botpubkey = 'npub10sa7ya5uwmhv6mrwyunkwgkl4cxc45spsff9x3fp2wuspy7yze2qr5zx5p' # NOTE: DVM public key for reference only
+botpubkey = 'npub13luw59my08xncgy9jw2e75gjrpftz4svq9hvu4se3fhma8zhyzvq4yzt64'
 pubhex = PublicKey.from_npub(botpubkey).hex()
-private_key = os.environ["nostrdvmprivatekey"]
+# private_key = os.environ["nostrdvmprivatekey"]
+private_key = os.environ["swanndvmprivatekey"]
 
 # Initialize lists
 completed_events = [] # TODO: should persist over time
@@ -71,16 +73,22 @@ while condition:
                         targetContent = targetContent.replace('nostr:npub'+npub,name)
 
                 # Save content to local file in user folder
-                with open(filepath+f'Swanbot{eventID}', 'w', encoding='utf-8') as file:
+                with open(filepath+f'Swanndvm{eventID}', 'w', encoding='utf-8') as file:
                     file.write(targetContent)
 
                 # Get pricing and save invoice id
-                costPerCharacter = 0.36/1000 # NOTE: 20% margin; $0.30/1000 goes to ElevenLabs
+                info = subscriptioninfo()
+                character_count = info['character_count']
+                character_limit = info['character_limit']
+                if character_count<character_limit:
+                    costPerCharacter = 0.18/1000 # NOTE: Reduce cost to make up monthly and attract customers
+                else:
+                    costPerCharacter = 0.36/1000 # NOTE: 20% margin; $0.30/1000 goes to ElevenLabs
                 contentLength = len(targetContent)
                 quote = costPerCharacter*contentLength #TODO: update from 0.01
                 if quote < 0.01: # NOTE: set price floor
                     quote = 0.01
-                lninv, conv_rate, invid = lightning_quote(quote,f'Swan DVM') #TODO: dynamic pricing ($0.01 for testing)
+                lninv, conv_rate, invid = lightning_quote(quote,f'Swann DVM') #TODO: dynamic pricing ($0.01 for testing)
                 amount = math.ceil(quote/float(conv_rate)*100000000*1000) # NOTE: denominated in millisats
                 quoted_events[eventID] = invid
                 print('Invoice Created')
@@ -105,10 +113,10 @@ while condition:
                 #         pubkey_ref = tag[1]
                 
                 # Transform content
-                with open(filepath+f'Swanbot{eventID}', 'r', encoding='utf-8') as file:
+                with open(filepath+f'Swanndvm{eventID}', 'r', encoding='utf-8') as file:
                     text = file.read()
-                aispeech(text=text, voice='30onnySJpZzctyufqBND', output = filepath+f'Swan{eventID}.wav')
-                link = serverlink(filepath+f'Swan{eventID}.wav', f'Swan{eventID}.wav')
+                aispeech(text=text, voice='30onnySJpZzctyufqBND', output = filepath+f'Swann{eventID}.wav')
+                link = serverlink(filepath+f'Swann{eventID}.wav', f'Swann{eventID}.wav')
                 public_url = re.findall(r'https?://\S+?\.wav', link)[0]
 
                 # Post paid content
